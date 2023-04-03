@@ -4,6 +4,7 @@
 
 import { makeExecutableSchema } from "@graphql-tools/schema";
 import { convert } from "./convert";
+import { Transaction, TransactionResolver } from "@types";
 
 /**
  * Transactions resolver that takes in args and returns a list of transactions,
@@ -17,7 +18,8 @@ import { convert } from "./convert";
  * @param {string[]} args.institutions
  * @param {string[]} args.accounts
  * @param {string} args.info
- * @param {string} args.desc
+ * @param {string[]} args.desc
+ * @param {string[]} args.excludeString
  * @return {Promise<Transaction[]>}
  */
 const typeDefs = /* GraphQL */ `
@@ -41,7 +43,8 @@ const typeDefs = /* GraphQL */ `
       institutions: [String]
       accounts: [String]
       info: String
-      desc: String
+      desc: [String]
+      excludeString: [String]
     ): [Transaction]
   }
 `;
@@ -61,9 +64,10 @@ export const schema = makeExecutableSchema({
           accounts,
           info,
           desc,
-        },
+          excludeString,
+        }: TransactionResolver
       ) => {
-        const transactions = await convert();
+        const transactions: Transaction[] = await convert();
         const filtered = transactions.filter((transaction) => {
           const {
             date,
@@ -73,25 +77,38 @@ export const schema = makeExecutableSchema({
             info: transactionInfo,
             desc: transactionDesc,
           } = transaction;
-          const dateInRange = startDate && endDate
-            ? new Date(date) >= new Date(startDate) && new Date(date) <= new Date(endDate)
-            : true;
-          const amtInRange = minAmt && maxAmt
-            ? amt >= parseFloat(minAmt) && amt <= parseFloat(maxAmt)
-            : true;
+          const dateInRange =
+            startDate && endDate
+              ? new Date(date) >= new Date(startDate) &&
+                new Date(date) <= new Date(endDate)
+              : true;
+          const amtInRange =
+            minAmt && maxAmt
+              ? amt >= parseFloat(minAmt) && amt <= parseFloat(maxAmt)
+              : true;
           const institutionInList = institutions
             ? institutions.includes(institution)
             : true;
-          const accountInList = accounts
-            ? accounts.includes(account)
-            : true;
-          const infoInList = info
-            ? transactionInfo.includes(info)
-            : true;
+          const accountInList = accounts ? accounts.includes(account) : true;
+          const infoInList = info ? transactionInfo.includes(info) : true;
           const descInList = desc
-            ? transactionDesc.includes(desc)
+            ? desc.some((descString) => transactionDesc.includes(descString))
             : true;
-          return dateInRange && amtInRange && institutionInList && accountInList && infoInList && descInList;
+          const excludeStringInList = excludeString
+            ? !excludeString.some((excludeString) =>
+                transactionDesc.includes(excludeString)
+              )
+            : true;
+
+          return (
+            dateInRange &&
+            amtInRange &&
+            institutionInList &&
+            accountInList &&
+            infoInList &&
+            descInList &&
+            excludeStringInList
+          );
         });
         return filtered;
       },

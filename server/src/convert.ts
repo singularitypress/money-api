@@ -2,29 +2,18 @@ import { readFileSync, readdirSync } from "fs";
 import csv from "csvtojson/v2";
 import { join, resolve } from "path";
 import { config } from "dotenv";
+import { Transaction } from "@types";
 config();
 
 const dir = process.env.FILES_DIR ?? "";
 
-interface Transaction {
-  date: string;
-  desc: string;
-  amt: number;
-  institution: string;
-  account: string;
-  info: string;
-  debit?: string;
-  credit?: string;
-}
-
 export const convert = async () => {
-
   if (!dir) {
-    console.log(resolve("server", "sample", "transactions.json"))
+    console.log(resolve("server", "sample", "transactions.json"));
     return JSON.parse(
       readFileSync(resolve("server", "sample", "transactions.json"), {
         encoding: "utf8",
-      }),
+      })
     );
   }
 
@@ -60,10 +49,10 @@ export const convert = async () => {
             },
           ];
         },
-        [],
+        []
       );
       return data;
-    }),
+    })
   );
   return [].concat(...converted) as Transaction[];
 };
