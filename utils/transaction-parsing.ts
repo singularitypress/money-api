@@ -1,9 +1,12 @@
 import { Transaction } from "@types";
 
-export const monthlySpendingPerYear = (transactions: Transaction[]) => {
+export const monthlyAmountPerYear = (transactions: Transaction[]) => {
   const monthlySpending: {
     [key: string]: {
-      [key: string]: number;
+      [key: string]: {
+        amt: number;
+        desc: string[];
+      };
     };
   } = {};
 
@@ -17,10 +20,14 @@ export const monthlySpendingPerYear = (transactions: Transaction[]) => {
     }
 
     if (!acc[year][month]) {
-      acc[year][month] = 0;
+      acc[year][month] = {
+        amt: 0,
+        desc: [],
+      };
     }
 
-    acc[year][month] += transaction.amt;
+    acc[year][month].amt += transaction.amt;
+    acc[year][month].desc.push(transaction.desc);
 
     return acc;
   }, monthlySpending);

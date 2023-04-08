@@ -1,3 +1,4 @@
+import { Nav } from "@components/global";
 import "../styles/globals.scss";
 import type { AppProps } from "next/app";
 import { Inter } from "next/font/google";
@@ -9,8 +10,11 @@ export default function App({
   pageProps: { session, ...pageProps },
 }: AppProps) {
   return (
-    <main className={inter.className}>
-      <Component {...pageProps} />
-    </main>
+    <>
+      <Nav />
+      <main className={inter.className}>
+        <Component {...pageProps} />
+      </main>
+    </>
   );
 }

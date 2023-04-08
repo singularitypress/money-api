@@ -1,7 +1,9 @@
 import { Transaction } from "@types";
-import { monthlySpendingPerYear } from "@utils";
+import { monthlyAmountPerYear } from "@utils";
 import axios from "axios";
-import { ResponsiveLine } from "@nivo/line";
+import { SegmentedControl } from "@components/form";
+import { useState } from "react";
+import { LineChart } from "@components/charts";
 
 interface Props {
   data: Transaction[];
@@ -10,6 +12,7 @@ interface Props {
     data: {
       x: string;
       y: number;
+      desc: string[];
     }[];
   }[];
   monthlyPayrollPerYear: {
@@ -17,173 +20,120 @@ interface Props {
     data: {
       x: string;
       y: number;
+      desc: string[];
     }[];
   }[];
 }
 
+type ChartType = "Monthly Amount Per Year" | "Monthly Amount";
+
 export default function Home({
-  data,
   monthlySpendingPerYear,
   monthlyPayrollPerYear,
 }: Props) {
-  const payees = [...new Set(data.map((transaction) => transaction.desc))].sort(
-    (a, b) => a.localeCompare(b),
+  const [spendingType, setSpendingType] = useState<ChartType>(
+    "Monthly Amount Per Year",
   );
+  const [payrollType, setPayrollType] = useState<ChartType>(
+    "Monthly Amount Per Year",
+  );
+
+  const chartData = {
+    monthlySpendingPerYear: {
+      "Monthly Amount Per Year": monthlySpendingPerYear,
+      "Monthly Amount": [
+        monthlySpendingPerYear.reduce(
+          (acc, curr) => {
+            return {
+              ...acc,
+              data: [
+                ...acc.data,
+                ...curr.data.map((data) => ({
+                  x: `${curr.id}-${data.x}`,
+                  y: data.y,
+                  desc: data.desc,
+                })),
+              ],
+            };
+          },
+          {
+            id: "Monthly Amount",
+            color: "hsl(0, 70%, 50%)",
+            data: [],
+          } as {
+            id: string;
+            color: string;
+            data: {
+              x: string;
+              y: number;
+              desc: string[];
+            }[];
+          },
+        ),
+      ],
+    },
+    monthlyPayrollPerYear: {
+      "Monthly Amount Per Year": monthlyPayrollPerYear,
+      "Monthly Amount": [
+        monthlyPayrollPerYear.reduce(
+          (acc, curr) => {
+            return {
+              ...acc,
+              data: [
+                ...acc.data,
+                ...curr.data.map((data) => ({
+                  x: `${curr.id}-${data.x}`,
+                  y: data.y,
+                  desc: data.desc,
+                })),
+              ],
+            };
+          },
+          {
+            id: "Monthly Amount",
+            color: "hsl(0, 70%, 50%)",
+            data: [],
+          } as {
+            id: string;
+            color: string;
+            data: {
+              x: string;
+              y: number;
+              desc: string[];
+            }[];
+          },
+        ),
+      ],
+    },
+  };
+
   return (
     <>
       <h1>Home</h1>
-      <h2>Nivo line chart for Monthly Payroll</h2>
       <div className="w-screen h-screen">
-        <div className="w-full h-3/4">
-          <ResponsiveLine
-            data={monthlyPayrollPerYear}
-            colors={[
-              "hsl(0, 70%, 50%)",
-              "hsl(40, 70%, 50%)",
-              "hsl(80, 70%, 50%)",
-              "hsl(120, 70%, 50%)",
-              "hsl(160, 70%, 50%)",
-              "hsl(200, 70%, 50%)",
-              "hsl(240, 70%, 50%)",
-              "hsl(280, 70%, 50%)",
-            ]}
-            margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-            xScale={{ type: "point" }}
-            yScale={{
-              type: "linear",
-              min: "auto",
-              max: "auto",
-              reverse: false,
-            }}
-            yFormat=" >-.2f"
-            axisTop={null}
-            axisRight={null}
-            axisBottom={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: "month",
-              legendOffset: 36,
-              legendPosition: "middle",
-            }}
-            axisLeft={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: "count",
-              legendOffset: -40,
-              legendPosition: "middle",
-            }}
-            pointSize={10}
-            pointColor={{ theme: "background" }}
-            pointBorderWidth={2}
-            pointBorderColor={{ from: "serieColor" }}
-            pointLabelYOffset={-12}
-            useMesh={true}
-            legends={[
-              {
-                anchor: "bottom-right",
-                direction: "column",
-                justify: false,
-                translateX: 100,
-                translateY: 0,
-                itemsSpacing: 0,
-                itemDirection: "left-to-right",
-                itemWidth: 80,
-                itemHeight: 20,
-                itemOpacity: 0.75,
-                symbolSize: 12,
-                symbolShape: "circle",
-                symbolBorderColor: "rgba(0, 0, 0, .5)",
-                effects: [
-                  {
-                    on: "hover",
-                    style: {
-                      itemBackground: "rgba(0, 0, 0, .03)",
-                      itemOpacity: 1,
-                    },
-                  },
-                ],
-              },
-            ]}
-          />
+        <h2>Nivo line chart for Monthly Spending</h2>
+        <SegmentedControl
+          options={["Monthly Amount Per Year", "Monthly Amount"] as ChartType[]}
+          value={spendingType}
+          onClick={(e) => {
+            console.log(e.currentTarget.value);
+            setSpendingType(e.currentTarget.value as ChartType);
+          }}
+        />
+        <div className="w-full h-96">
+          <LineChart data={chartData.monthlySpendingPerYear[spendingType]} />
         </div>
-      </div>
-      <h2>Nivo line chart for Monthly Spending</h2>
-      <div className="w-screen h-screen">
-        <div className="w-full h-3/4">
-          <ResponsiveLine
-            data={monthlySpendingPerYear}
-            colors={[
-              "hsl(0, 70%, 50%)",
-              "hsl(40, 70%, 50%)",
-              "hsl(80, 70%, 50%)",
-              "hsl(120, 70%, 50%)",
-              "hsl(160, 70%, 50%)",
-              "hsl(200, 70%, 50%)",
-              "hsl(240, 70%, 50%)",
-              "hsl(280, 70%, 50%)",
-            ]}
-            margin={{ top: 50, right: 110, bottom: 50, left: 60 }}
-            xScale={{ type: "point" }}
-            yScale={{
-              type: "linear",
-              min: "auto",
-              max: "auto",
-              reverse: false,
-            }}
-            yFormat=" >-.2f"
-            axisTop={null}
-            axisRight={null}
-            axisBottom={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: "month",
-              legendOffset: 36,
-              legendPosition: "middle",
-            }}
-            axisLeft={{
-              tickSize: 5,
-              tickPadding: 5,
-              tickRotation: 0,
-              legend: "count",
-              legendOffset: -40,
-              legendPosition: "middle",
-            }}
-            pointSize={10}
-            pointColor={{ theme: "background" }}
-            pointBorderWidth={2}
-            pointBorderColor={{ from: "serieColor" }}
-            pointLabelYOffset={-12}
-            useMesh={true}
-            legends={[
-              {
-                anchor: "bottom-right",
-                direction: "column",
-                justify: false,
-                translateX: 100,
-                translateY: 0,
-                itemsSpacing: 0,
-                itemDirection: "left-to-right",
-                itemWidth: 80,
-                itemHeight: 20,
-                itemOpacity: 0.75,
-                symbolSize: 12,
-                symbolShape: "circle",
-                symbolBorderColor: "rgba(0, 0, 0, .5)",
-                effects: [
-                  {
-                    on: "hover",
-                    style: {
-                      itemBackground: "rgba(0, 0, 0, .03)",
-                      itemOpacity: 1,
-                    },
-                  },
-                ],
-              },
-            ]}
-          />
+        <h2>Nivo line chart for Monthly Payroll</h2>
+        <SegmentedControl
+          options={["Monthly Amount Per Year", "Monthly Amount"] as ChartType[]}
+          value={payrollType}
+          onClick={(e) => {
+            console.log(e.currentTarget.value);
+            setPayrollType(e.currentTarget.value as ChartType);
+          }}
+        />
+        <div className="w-full h-96">
+          <LineChart data={chartData.monthlyPayrollPerYear[payrollType]} />
         </div>
       </div>
     </>
@@ -215,6 +165,8 @@ export async function getStaticProps() {
         payroll: transactions(
           maxAmt: "10000000.00"
           minAmt: "0.00"
+          startDate: "2020-01-01"
+          endDate: "2023-12-31"
           desc: ${process.env.PAYROLL_TRANSACTIONS}
         ) {
           amt
@@ -235,29 +187,28 @@ export async function getStaticProps() {
 
   return {
     props: {
-      data: (spending as Transaction[]).sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      ),
-      monthlySpendingPerYear: Object.keys(monthlySpendingPerYear(spending)).map(
+      monthlySpendingPerYear: Object.keys(monthlyAmountPerYear(spending)).map(
         (year) => ({
           id: year,
-          data: Object.keys(monthlySpendingPerYear(spending)[year]).map(
+          data: Object.keys(monthlyAmountPerYear(spending)[year]).map(
             (month) => ({
               x: monthName(Number(month) - 1),
-              y: (monthlySpendingPerYear(spending)[year][month] * -1).toFixed(
+              y: (monthlyAmountPerYear(spending)[year][month].amt * -1).toFixed(
                 2,
               ),
+              desc: monthlyAmountPerYear(spending)[year][month].desc,
             }),
           ),
         }),
       ),
-      monthlyPayrollPerYear: Object.keys(monthlySpendingPerYear(payroll)).map(
+      monthlyPayrollPerYear: Object.keys(monthlyAmountPerYear(payroll)).map(
         (year) => ({
           id: year,
-          data: Object.keys(monthlySpendingPerYear(payroll)[year]).map(
+          data: Object.keys(monthlyAmountPerYear(payroll)[year]).map(
             (month) => ({
               x: monthName(Number(month) - 1),
-              y: monthlySpendingPerYear(payroll)[year][month].toFixed(2),
+              y: monthlyAmountPerYear(payroll)[year][month].amt.toFixed(2),
+              desc: monthlyAmountPerYear(payroll)[year][month].desc,
             }),
           ),
         }),
