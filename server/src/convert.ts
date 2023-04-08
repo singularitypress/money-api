@@ -25,13 +25,27 @@ export const convert = async () => {
         .replace(/\.csv/g, "")
         .split("_");
       const data = (await csv().fromFile(join(dir, file))).reduce(
-        (acc, curr) => {
+        (acc: Transaction[], curr: Transaction) => {
           const { date } = curr;
           let amt = curr?.amt;
           if (!amt) {
             const { debit, credit } = curr;
-            amt = debit || `-${credit}`;
+            amt = parseFloat(debit || `-${credit}`);
           }
+
+          /**
+           * Check if a desc with the first 6 alphanumeric characters of the current desc exists in acc already,
+           * and if so, use that desc instead of the current desc.
+           */
+          const prev = acc.find(
+            (t) =>
+              sanitizePayee(t.desc)
+                .replace(/[^a-zA-Z0-9]/g, "")
+                .substring(0, 8) ===
+              sanitizePayee(curr.desc)
+                .replace(/[^a-zA-Z0-9]/g, "")
+                .substring(0, 8),
+          );
 
           return [
             ...acc,
@@ -40,14 +54,14 @@ export const convert = async () => {
               institution,
               account,
               info,
-              desc: sanitizePayee(curr.desc || curr.payee),
+              desc: prev?.desc || sanitizePayee(curr.desc),
               date: new Date(date).toLocaleString("en-US", {
                 timeZone: "America/New_York",
                 day: "2-digit",
                 month: "2-digit",
                 year: "numeric",
               }),
-              amt: parseFloat(amt),
+              amt,
             },
           ];
         },

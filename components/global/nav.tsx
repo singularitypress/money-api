@@ -49,16 +49,16 @@ export const Nav = () => {
       >
         <div className="text-sm lg:flex-grow">
           <Link
-            href="/payees"
+            href="/spending"
             className="block mt-4 lg:inline-block lg:mt-0 text-gray-200 hover:text-white mr-4"
           >
-            Payees
+            Spending
           </Link>
           <a
-            href="#responsive-header"
+            href="/payroll"
             className="block mt-4 lg:inline-block lg:mt-0 text-gray-200 hover:text-white mr-4"
           >
-            Examples
+            Payroll
           </a>
         </div>
       </div>
