@@ -5,7 +5,7 @@ export const monthlyAmountPerYear = (transactions: Transaction[]) => {
     [key: string]: {
       [key: string]: {
         amt: number;
-        desc: string[];
+        transactions: Transaction[];
       };
     };
   } = {};
@@ -22,13 +22,36 @@ export const monthlyAmountPerYear = (transactions: Transaction[]) => {
     if (!acc[year][month]) {
       acc[year][month] = {
         amt: 0,
-        desc: [],
+        transactions: [],
       };
     }
 
     acc[year][month].amt += transaction.amt;
-    acc[year][month].desc.push(transaction.desc);
+    acc[year][month].transactions.push(transaction);
 
     return acc;
   }, monthlySpending);
+};
+
+export const spendingByPayee = (transactions: Transaction[]) => {
+  const payeeSpending: {
+    [key: string]: {
+      amt: number;
+      count: number;
+    };
+  } = {};
+
+  return transactions.reduce((acc, transaction) => {
+    if (!acc[transaction.desc]) {
+      acc[transaction.desc] = {
+        amt: 0,
+        count: 0,
+      };
+    }
+
+    acc[transaction.desc].amt += transaction.amt;
+    acc[transaction.desc].count += 1;
+
+    return acc;
+  }, payeeSpending);
 };

@@ -3,6 +3,7 @@ import csv from "csvtojson/v2";
 import { join, resolve } from "path";
 import { config } from "dotenv";
 import { Transaction } from "@types";
+import { sanitizePayee } from "./sanitize-payee";
 config();
 
 const dir = process.env.FILES_DIR ?? "";
@@ -13,7 +14,7 @@ export const convert = async () => {
     return JSON.parse(
       readFileSync(resolve("server", "sample", "transactions.json"), {
         encoding: "utf8",
-      })
+      }),
     );
   }
 
@@ -39,6 +40,7 @@ export const convert = async () => {
               institution,
               account,
               info,
+              desc: sanitizePayee(curr.desc || curr.payee),
               date: new Date(date).toLocaleString("en-US", {
                 timeZone: "America/New_York",
                 day: "2-digit",
@@ -49,10 +51,10 @@ export const convert = async () => {
             },
           ];
         },
-        []
+        [],
       );
       return data;
-    })
+    }),
   );
   return [].concat(...converted) as Transaction[];
 };

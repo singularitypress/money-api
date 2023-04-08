@@ -1,5 +1,5 @@
 import React from "react";
-import { PointTooltip, ResponsiveLine } from "@nivo/line";
+import { PointMouseHandler, PointTooltip, ResponsiveLine } from "@nivo/line";
 
 const ToolTip: PointTooltip = ({ point }) => {
   return (
@@ -18,21 +18,21 @@ const ToolTip: PointTooltip = ({ point }) => {
           currency: "CAD",
         }).format(Number(point.data.y))}
       </strong>
-      {/* <pre>
-        <code>{JSON.stringify(point.data, null, 2)}</code>
-      </pre> */}
     </div>
   );
 };
 
 export const LineChart = ({
   data,
+  onClick,
 }: {
   data: { id: string; data: { x: string; y: number }[] }[];
+  onClick?: PointMouseHandler;
 }) => {
   return (
     <ResponsiveLine
       data={data}
+      onClick={onClick}
       colors={[
         "hsl(0, 70%, 50%)",
         "hsl(40, 70%, 50%)",
@@ -43,6 +43,7 @@ export const LineChart = ({
         "hsl(240, 70%, 50%)",
         "hsl(280, 70%, 50%)",
       ]}
+      curve="natural"
       margin={{ top: 50, right: 110, bottom: 100, left: 60 }}
       xScale={{ type: "point" }}
       yScale={{
