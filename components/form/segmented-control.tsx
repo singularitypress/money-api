@@ -14,7 +14,12 @@ export const SegmentedControl = ({
   className,
 }: Props) => {
   return (
-    <div className={[className, "bg-gray-800 p-4 w-fit rounded-md"].join(" ")}>
+    <div
+      className={[
+        className,
+        "bg-gray-800 p-4 rounded-md grid grid-cols-2 gap-4",
+      ].join(" ")}
+    >
       {options.map((option, index) => (
         <button
           key={option}

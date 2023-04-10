@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { LineChart, PieChart } from "@components/charts";
 import { LoadingSpinner, Modal } from "@components/ui";
 import Select from "react-select";
+import { Serie } from "@nivo/line";
 
 interface Props {
   data: Transaction[];
@@ -149,7 +150,7 @@ export default function Home({ data, descList }: Props) {
       <h1>Home</h1>
       <div className="h-screen">
         <h2>Nivo line chart for Monthly Spending</h2>
-        <div className="flex flex-row items-center">
+        <div className="grid grid-cols-3 gap-4">
           <SegmentedControl
             options={
               ["Monthly Amount Per Year", "Monthly Amount"] as ChartType[]
@@ -158,28 +159,23 @@ export default function Home({ data, descList }: Props) {
             onClick={(e) => {
               setSpendingType(e.currentTarget.value as ChartType);
             }}
-            className="mr-4"
           />
-          <div className="w-1/3 mr-4">
-            <Select
-              placeholder="Select a description to exclude"
-              isMulti
-              isSearchable
-              options={descList.map((desc) => ({ value: desc, label: desc }))}
-              onChange={(e) => setSelectedExclusion([...e])}
-              defaultValue={selectedExclusion}
-            />
-          </div>
-          <div className="w-1/3 mr-4">
-            <Select
-              placeholder="Select a description to include"
-              isMulti
-              isSearchable
-              options={descList.map((desc) => ({ value: desc, label: desc }))}
-              onChange={(e) => setSelectedInclusion([...e])}
-              defaultValue={selectedInclusion}
-            />
-          </div>
+          <Select
+            placeholder="Select a description to exclude"
+            isMulti
+            isSearchable
+            options={descList.map((desc) => ({ value: desc, label: desc }))}
+            onChange={(e) => setSelectedExclusion([...e])}
+            defaultValue={selectedExclusion}
+          />
+          <Select
+            placeholder="Select a description to include"
+            isMulti
+            isSearchable
+            options={descList.map((desc) => ({ value: desc, label: desc }))}
+            onChange={(e) => setSelectedInclusion([...e])}
+            defaultValue={selectedInclusion}
+          />
         </div>
         <div className="w-full h-3/4">{chartData[spendingType]}</div>
       </div>
@@ -204,6 +200,27 @@ export default function Home({ data, descList }: Props) {
                   spendingByPayee(selectedTransactions)[b.id].amt,
               )
               .slice(0, 10)}
+          />
+        </div>
+        <div className="h-screen">
+          <LineChart
+            curve="natural"
+            xScale={{
+              type: "time",
+              format: "%Y-%m-%d",
+              precision: "day",
+              useUTC: false,
+            }}
+            data={[
+              {
+                id: "Monthly Amount",
+                color: "hsl(0, 70%, 50%)",
+                data: selectedTransactions.map((t) => ({
+                  x: new Date(t.date),
+                  y: t.amt * -1,
+                })),
+              },
+            ]}
           />
         </div>
       </Modal>

@@ -54,12 +54,12 @@ export const Nav = () => {
           >
             Spending
           </Link>
-          <a
+          <Link
             href="/payroll"
             className="block mt-4 lg:inline-block lg:mt-0 text-gray-200 hover:text-white mr-4"
           >
             Payroll
-          </a>
+          </Link>
         </div>
       </div>
     </nav>
