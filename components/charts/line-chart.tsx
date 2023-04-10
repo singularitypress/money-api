@@ -15,7 +15,7 @@ const ToolTip: PointTooltip = ({ point }) => {
         border: "1px solid #ccc",
       }}
     >
-      <strong>{`${point.data.x}`}</strong>
+      <strong>{`${point.data.x}`.slice(0, 24)}</strong>
       <br />
       <strong>
         {new Intl.NumberFormat("en-US", {
@@ -89,7 +89,7 @@ export const LineChart = ({
         legend: "month",
         legendOffset: 75,
         legendPosition: "middle",
-        format: xScale.type === "point" ? undefined : "%Y-%m",
+        format: xScale.type === "point" ? undefined : "%Y-%m-%d",
       }}
       axisLeft={{
         tickSize: 5,

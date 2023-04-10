@@ -1,90 +1,28 @@
 import { Transaction } from "@types";
-import { monthlyAmountPerYear, spendingByPayee } from "@utils";
+import {
+  convertToMonthly,
+  convertToTransactionSerie,
+  monthlyAmountPerYear,
+  spendingByPayee,
+} from "@utils";
 import axios from "axios";
 import { SegmentedControl } from "@components/form";
 import { useEffect, useMemo, useState } from "react";
 import { LineChart, PieChart } from "@components/charts";
-import { LoadingSpinner, Modal } from "@components/ui";
+import { Modal } from "@components/ui";
 import Select from "react-select";
-import { Serie } from "@nivo/line";
+import Head from "next/head";
 
 interface Props {
   data: Transaction[];
   descList: string[];
 }
 
-interface TransactionsSerie {
-  id: string;
-  color?: string;
-  data: {
-    x: string;
-    y: number;
-    transactions: Transaction[];
-  }[];
-}
-
 type ChartType = "Monthly Amount Per Year" | "Monthly Amount";
-
-const convertToMonthly = (
-  data: {
-    id: string;
-    data: {
-      x: string;
-      y: number;
-      transactions: Transaction[];
-    }[];
-  }[],
-) => {
-  return data.reduce(
-    (acc, curr) => {
-      return {
-        ...acc,
-        data: [
-          ...acc.data,
-          ...curr.data.map((data) => ({
-            x: `${curr.id}-${data.x}`,
-            y: data.y,
-            transactions: data.transactions,
-          })),
-        ],
-      };
-    },
-    {
-      id: "Monthly Amount",
-      color: "hsl(0, 70%, 50%)",
-      data: [],
-      transactions: [],
-    } as {
-      id: string;
-      color: string;
-      data: {
-        x: string;
-        y: number;
-        transactions: Transaction[];
-      }[];
-    },
-  );
-};
-
-const convertToTransactionSerie = (data: Transaction[]) => {
-  const monthName = (month: number) => {
-    const date = new Date(2020, month, 1);
-    return date.toLocaleString("default", { month: "long" });
-  };
-
-  return Object.keys(monthlyAmountPerYear(data)).map((year) => ({
-    id: year,
-    data: Object.keys(monthlyAmountPerYear(data)[year]).map((month) => ({
-      x: monthName(Number(month) - 1),
-      y: monthlyAmountPerYear(data)[year][month].amt * -1,
-      transactions: monthlyAmountPerYear(data)[year][month].transactions,
-    })),
-  }));
-};
 
 export default function Home({ data, descList }: Props) {
   const [spendingType, setSpendingType] = useState<ChartType>(
-    "Monthly Amount Per Year",
+    "Monthly Amount Per Year"
   );
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -145,9 +83,16 @@ export default function Home({ data, descList }: Props) {
     ),
   };
 
+  useEffect(() => {
+    console.log(convertToTransactionSerie(filteredData));
+  }, [filteredData]);
+
   return (
     <>
-      <h1>Home</h1>
+      <Head>
+        <title>Spending</title>
+      </Head>
+      <h1>Spending</h1>
       <div className="h-screen">
         <h2>Nivo line chart for Monthly Spending</h2>
         <div className="grid grid-cols-3 gap-4">
@@ -181,15 +126,15 @@ export default function Home({ data, descList }: Props) {
       </div>
       <Modal visible={modalVisible} toggleVisibility={setModalVisible}>
         <h1>Modal</h1>
-        <div className="h-screen">
+        <div className="h-screen grid grid-rows-2 gap-4">
           <PieChart
             data={Object.keys(spendingByPayee(selectedTransactions))
               .map((payee, index) => ({
                 id: payee,
                 value: Math.abs(
                   Number(
-                    spendingByPayee(selectedTransactions)[payee].amt.toFixed(2),
-                  ),
+                    spendingByPayee(selectedTransactions)[payee].amt.toFixed(2)
+                  )
                 ),
                 label: payee,
                 color: `hsl(${index * 10}, 70%, 50%)`,
@@ -197,14 +142,12 @@ export default function Home({ data, descList }: Props) {
               .sort(
                 (a, b) =>
                   spendingByPayee(selectedTransactions)[a.id].amt -
-                  spendingByPayee(selectedTransactions)[b.id].amt,
+                  spendingByPayee(selectedTransactions)[b.id].amt
               )
               .slice(0, 10)}
           />
-        </div>
-        <div className="h-screen">
           <LineChart
-            curve="natural"
+            curve="basis"
             xScale={{
               type: "time",
               format: "%Y-%m-%d",
@@ -213,12 +156,26 @@ export default function Home({ data, descList }: Props) {
             }}
             data={[
               {
-                id: "Monthly Amount",
+                id: "Daily Amount",
                 color: "hsl(0, 70%, 50%)",
-                data: selectedTransactions.map((t) => ({
-                  x: new Date(t.date),
-                  y: t.amt * -1,
-                })),
+                data: selectedTransactions
+                  .map((t) => ({
+                    x: new Date(t.date),
+                    y: t.amt * -1,
+                  }))
+                  // reduce to merge transactions with same date and sum the amount and fill in missing days
+                  .reduce((acc, curr) => {
+                    const existing = acc.find(
+                      (a) => a.x.getDate() === curr.x.getDate()
+                    );
+                    if (existing) {
+                      existing.y += curr.y;
+                    } else {
+                      acc.push(curr);
+                    }
+                    return acc;
+                  }, [] as { x: Date; y: number }[])
+                  .sort((a, b) => a.x.getDate() - b.x.getDate()),
               },
             ]}
           />

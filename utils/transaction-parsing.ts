@@ -17,29 +17,16 @@ export const monthlyAmountPerYear = (transactions: Transaction[]) => {
 
     if (!acc[year]) {
       acc[year] = {};
-    }
-
-    if (!acc[year][month]) {
-      acc[year][month] = {
-        amt: 0,
-        transactions: [],
-      };
+      Array.from({ length: 12 }, (_, i) => i + 1).forEach((month) => {
+        acc[year][month] = {
+          amt: 0,
+          transactions: [],
+        };
+      });
     }
 
     acc[year][month].amt += transaction.amt;
     acc[year][month].transactions.push(transaction);
-
-    // if the previous year doesn't exist, create it. Check if the previous year is greater than the first year
-    if (year - 1 > Number(Object.keys(acc)[0]) && !acc[year - 1]) {
-      acc[year - 1] = {};
-    }
-
-    if (month - 1 > 0 && !acc[year][month - 1]) {
-      acc[year][month - 1] = {
-        amt: 0,
-        transactions: [],
-      };
-    }
 
     return acc;
   }, monthlySpending);
@@ -66,4 +53,63 @@ export const spendingByPayee = (transactions: Transaction[]) => {
 
     return acc;
   }, payeeSpending);
+};
+
+export const convertToMonthly = (
+  data: {
+    id: string;
+    data: {
+      x: string;
+      y: number;
+      transactions: Transaction[];
+    }[];
+  }[]
+) => {
+  return data.reduce(
+    (acc, curr) => {
+      return {
+        ...acc,
+        data: [
+          ...acc.data,
+          ...curr.data.map((data) => ({
+            x: `${curr.id}-${data.x}`,
+            y: data.y,
+            transactions: data.transactions,
+          })),
+        ],
+      };
+    },
+    {
+      id: "Monthly Amount",
+      color: "hsl(0, 70%, 50%)",
+      data: [],
+      transactions: [],
+    } as {
+      id: string;
+      color: string;
+      data: {
+        x: string;
+        y: number;
+        transactions: Transaction[];
+      }[];
+    }
+  );
+};
+
+export const convertToTransactionSerie = (data: Transaction[]) => {
+  const monthName = (month: number) => {
+    const date = new Date(2020, month, 1);
+    return date.toLocaleString("default", { month: "long" });
+  };
+
+  return Object.keys(monthlyAmountPerYear(data)).map((year) => {
+    return {
+      id: year,
+      data: Object.keys(monthlyAmountPerYear(data)[year]).map((month) => ({
+        x: monthName(Number(month) - 1),
+        y: monthlyAmountPerYear(data)[year][month].amt * -1,
+        transactions: monthlyAmountPerYear(data)[year][month].transactions,
+      })),
+    };
+  });
 };
