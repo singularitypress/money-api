@@ -1,5 +1,10 @@
 import React from "react";
-import { PointMouseHandler, PointTooltip, ResponsiveLine } from "@nivo/line";
+import {
+  PointMouseHandler,
+  PointTooltip,
+  ResponsiveLine,
+  Serie,
+} from "@nivo/line";
 
 const ToolTip: PointTooltip = ({ point }) => {
   return (
@@ -25,9 +30,30 @@ const ToolTip: PointTooltip = ({ point }) => {
 export const LineChart = ({
   data,
   onClick,
+  xScale = { type: "point" },
+  curve = "natural",
 }: {
-  data: { id: string; data: { x: string; y: number }[] }[];
+  data: Serie[];
   onClick?: PointMouseHandler;
+  xScale?:
+    | { type: "point" }
+    | {
+        type: "time";
+        format: string;
+        precision: "day" | "month" | "year";
+        useUTC: boolean;
+      };
+  curve?:
+    | "natural"
+    | "basis"
+    | "cardinal"
+    | "catmullRom"
+    | "linear"
+    | "monotoneX"
+    | "monotoneY"
+    | "step"
+    | "stepAfter"
+    | "stepBefore";
 }) => {
   return (
     <ResponsiveLine
@@ -43,9 +69,9 @@ export const LineChart = ({
         "hsl(240, 70%, 50%)",
         "hsl(280, 70%, 50%)",
       ]}
-      curve="natural"
+      curve={curve}
       margin={{ top: 50, right: 110, bottom: 100, left: 60 }}
-      xScale={{ type: "point" }}
+      xScale={xScale}
       yScale={{
         type: "linear",
         min: "auto",
@@ -63,6 +89,7 @@ export const LineChart = ({
         legend: "month",
         legendOffset: 75,
         legendPosition: "middle",
+        format: xScale.type === "point" ? undefined : "%Y-%m",
       }}
       axisLeft={{
         tickSize: 5,

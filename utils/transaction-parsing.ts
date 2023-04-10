@@ -29,6 +29,18 @@ export const monthlyAmountPerYear = (transactions: Transaction[]) => {
     acc[year][month].amt += transaction.amt;
     acc[year][month].transactions.push(transaction);
 
+    // if the previous year doesn't exist, create it. Check if the previous year is greater than the first year
+    if (year - 1 > Number(Object.keys(acc)[0]) && !acc[year - 1]) {
+      acc[year - 1] = {};
+    }
+
+    if (month - 1 > 0 && !acc[year][month - 1]) {
+      acc[year][month - 1] = {
+        amt: 0,
+        transactions: [],
+      };
+    }
+
     return acc;
   }, monthlySpending);
 };

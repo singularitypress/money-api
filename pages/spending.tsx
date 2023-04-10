@@ -1,21 +1,25 @@
 import { Transaction } from "@types";
-import { dedupePayees, monthlyAmountPerYear, spendingByPayee } from "@utils";
+import { monthlyAmountPerYear, spendingByPayee } from "@utils";
 import axios from "axios";
 import { SegmentedControl } from "@components/form";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { LineChart, PieChart } from "@components/charts";
-import { Modal } from "@components/ui";
+import { LoadingSpinner, Modal } from "@components/ui";
+import Select from "react-select";
 
 interface Props {
-  monthlySpendingPerYear: {
-    id: string;
-    data: {
-      x: string;
-      y: number;
-      transactions: Transaction[];
-    }[];
+  data: Transaction[];
+  descList: string[];
+}
+
+interface TransactionsSerie {
+  id: string;
+  color?: string;
+  data: {
+    x: string;
+    y: number;
+    transactions: Transaction[];
   }[];
-  payees: string[];
 }
 
 type ChartType = "Monthly Amount Per Year" | "Monthly Amount";
@@ -61,16 +65,67 @@ const convertToMonthly = (
   );
 };
 
-export default function Home({ monthlySpendingPerYear, payees }: Props) {
+const convertToTransactionSerie = (data: Transaction[]) => {
+  const monthName = (month: number) => {
+    const date = new Date(2020, month, 1);
+    return date.toLocaleString("default", { month: "long" });
+  };
+
+  return Object.keys(monthlyAmountPerYear(data)).map((year) => ({
+    id: year,
+    data: Object.keys(monthlyAmountPerYear(data)[year]).map((month) => ({
+      x: monthName(Number(month) - 1),
+      y: monthlyAmountPerYear(data)[year][month].amt * -1,
+      transactions: monthlyAmountPerYear(data)[year][month].transactions,
+    })),
+  }));
+};
+
+export default function Home({ data, descList }: Props) {
   const [spendingType, setSpendingType] = useState<ChartType>(
     "Monthly Amount Per Year",
   );
   const [modalVisible, setModalVisible] = useState(false);
 
+  const [selectedExclusion, setSelectedExclusion] = useState<
+    {
+      value: string;
+      label: string;
+    }[]
+  >([]);
+
+  const [selectedInclusion, setSelectedInclusion] = useState<
+    {
+      value: string;
+      label: string;
+    }[]
+  >([]);
+
+  const [selectedTransactions, setSelectedTransactions] = useState<
+    Transaction[]
+  >([]);
+
+  const filteredData = useMemo(() => {
+    return (
+      data
+        // filter for inclusion
+        .filter((d) => {
+          if (selectedInclusion.length === 0) return true;
+          return selectedInclusion.some((e) => d.desc.includes(e.value));
+        })
+        // filter for exclusion
+        .filter((d) => {
+          if (selectedExclusion.length === 0) return true;
+          return !selectedExclusion.some((e) => d.desc.includes(e.value));
+        })
+    );
+  }, [data, selectedExclusion, selectedInclusion]);
+
   const chartData = {
     "Monthly Amount Per Year": (
       <LineChart
-        data={monthlySpendingPerYear}
+        curve="natural"
+        data={convertToTransactionSerie(filteredData)}
         onClick={(d) => {
           setSelectedTransactions((d.data as any).transactions);
           setModalVisible(true);
@@ -79,7 +134,8 @@ export default function Home({ monthlySpendingPerYear, payees }: Props) {
     ),
     "Monthly Amount": (
       <LineChart
-        data={[convertToMonthly(monthlySpendingPerYear)]}
+        curve="natural"
+        data={[convertToMonthly(convertToTransactionSerie(filteredData))]}
         onClick={(d) => {
           setSelectedTransactions((d.data as any).transactions);
           setModalVisible(true);
@@ -88,22 +144,43 @@ export default function Home({ monthlySpendingPerYear, payees }: Props) {
     ),
   };
 
-  const [selectedTransactions, setSelectedTransactions] = useState<
-    Transaction[]
-  >([]);
-
   return (
     <>
       <h1>Home</h1>
       <div className="h-screen">
         <h2>Nivo line chart for Monthly Spending</h2>
-        <SegmentedControl
-          options={["Monthly Amount Per Year", "Monthly Amount"] as ChartType[]}
-          value={spendingType}
-          onClick={(e) => {
-            setSpendingType(e.currentTarget.value as ChartType);
-          }}
-        />
+        <div className="flex flex-row items-center">
+          <SegmentedControl
+            options={
+              ["Monthly Amount Per Year", "Monthly Amount"] as ChartType[]
+            }
+            value={spendingType}
+            onClick={(e) => {
+              setSpendingType(e.currentTarget.value as ChartType);
+            }}
+            className="mr-4"
+          />
+          <div className="w-1/3 mr-4">
+            <Select
+              placeholder="Select a description to exclude"
+              isMulti
+              isSearchable
+              options={descList.map((desc) => ({ value: desc, label: desc }))}
+              onChange={(e) => setSelectedExclusion([...e])}
+              defaultValue={selectedExclusion}
+            />
+          </div>
+          <div className="w-1/3 mr-4">
+            <Select
+              placeholder="Select a description to include"
+              isMulti
+              isSearchable
+              options={descList.map((desc) => ({ value: desc, label: desc }))}
+              onChange={(e) => setSelectedInclusion([...e])}
+              defaultValue={selectedInclusion}
+            />
+          </div>
+        </div>
         <div className="w-full h-3/4">{chartData[spendingType]}</div>
       </div>
       <Modal visible={modalVisible} toggleVisibility={setModalVisible}>
@@ -155,39 +232,18 @@ export async function getStaticProps() {
           ]
           excludeString: ${process.env.EXCLUDED_TRANSACTIONS}
         ) {
-          amt
           desc
+          amt
           date
-          institution
-          account
         }
       }
     `,
   });
 
-  const monthName = (month: number) => {
-    const date = new Date(2020, month, 1);
-    return date.toLocaleString("default", { month: "long" });
-  };
-
   return {
     props: {
-      monthlySpendingPerYear: Object.keys(monthlyAmountPerYear(spending)).map(
-        (year) => ({
-          id: year,
-          data: Object.keys(monthlyAmountPerYear(spending)[year]).map(
-            (month) => ({
-              x: monthName(Number(month) - 1),
-              y: (monthlyAmountPerYear(spending)[year][month].amt * -1).toFixed(
-                2,
-              ),
-              transactions:
-                monthlyAmountPerYear(spending)[year][month].transactions,
-            }),
-          ),
-        }),
-      ),
-      payees: [...new Set((spending as Transaction[]).map((s) => s.desc))],
+      data: spending,
+      descList: [...new Set((spending as Transaction[]).map((s) => s.desc))],
     },
   };
 }
