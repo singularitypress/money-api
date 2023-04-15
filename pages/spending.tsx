@@ -22,7 +22,7 @@ type ChartType = "Monthly Amount Per Year" | "Monthly Amount";
 
 export default function Home({ data, descList }: Props) {
   const [spendingType, setSpendingType] = useState<ChartType>(
-    "Monthly Amount Per Year"
+    "Monthly Amount Per Year",
   );
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -109,7 +109,9 @@ export default function Home({ data, descList }: Props) {
             placeholder="Select a description to exclude"
             isMulti
             isSearchable
-            options={descList.map((desc) => ({ value: desc, label: desc }))}
+            options={descList
+              .map((desc) => ({ value: desc, label: desc }))
+              .sort((a, b) => a.value.localeCompare(b.value))}
             onChange={(e) => setSelectedExclusion([...e])}
             defaultValue={selectedExclusion}
           />
@@ -117,7 +119,9 @@ export default function Home({ data, descList }: Props) {
             placeholder="Select a description to include"
             isMulti
             isSearchable
-            options={descList.map((desc) => ({ value: desc, label: desc }))}
+            options={descList
+              .map((desc) => ({ value: desc, label: desc }))
+              .sort((a, b) => a.value.localeCompare(b.value))}
             onChange={(e) => setSelectedInclusion([...e])}
             defaultValue={selectedInclusion}
           />
@@ -133,8 +137,8 @@ export default function Home({ data, descList }: Props) {
                 id: payee,
                 value: Math.abs(
                   Number(
-                    spendingByPayee(selectedTransactions)[payee].amt.toFixed(2)
-                  )
+                    spendingByPayee(selectedTransactions)[payee].amt.toFixed(2),
+                  ),
                 ),
                 label: payee,
                 color: `hsl(${index * 10}, 70%, 50%)`,
@@ -142,7 +146,7 @@ export default function Home({ data, descList }: Props) {
               .sort(
                 (a, b) =>
                   spendingByPayee(selectedTransactions)[a.id].amt -
-                  spendingByPayee(selectedTransactions)[b.id].amt
+                  spendingByPayee(selectedTransactions)[b.id].amt,
               )
               .slice(0, 10)}
           />
@@ -166,7 +170,7 @@ export default function Home({ data, descList }: Props) {
                   // reduce to merge transactions with same date and sum the amount and fill in missing days
                   .reduce((acc, curr) => {
                     const existing = acc.find(
-                      (a) => a.x.getDate() === curr.x.getDate()
+                      (a) => a.x.getDate() === curr.x.getDate(),
                     );
                     if (existing) {
                       existing.y += curr.y;
