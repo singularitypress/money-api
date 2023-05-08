@@ -10,7 +10,7 @@
     "server:dev": "nodemon",
     "dev": "concurrently \"nodemon\" \"next dev\"",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently \"node server/build/src/index.js\" \"next start\"",
     "lint": "next lint"
   },
   "author": "Jay Pandya",
@@ -23,6 +23,7 @@
     "@types/node": "^18.15.11",
     "@types/react": "^18.0.32",
     "@types/react-dom": "^18.0.11",
+    "@types/uuid": "^9.0.1",
     "autoprefixer": "^10.4.14",
     "concurrently": "^8.0.1",
     "dotenv": "^16.0.3",
@@ -49,6 +50,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-select": "^5.7.2",
-    "swr": "^2.1.2"
+    "swr": "^2.1.2",
+    "uuid": "^9.0.0"
   }
 }

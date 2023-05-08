@@ -12,6 +12,8 @@ import { schema } from "./schema";
 
 const app = express();
 
+const transactions = convert();
+
 app.use(express.json());
 
 app.use("/graphiql", async (req, res) => {
@@ -45,7 +47,7 @@ app.use(
         query,
         variables,
         request,
-        schema,
+        schema: schema(await transactions),
       });
 
       // processRequest returns one of three types of results depending on how the server should respond
@@ -56,13 +58,12 @@ app.use(
       // See "Advanced Usage" below for more details and customizations available on that layer.
       sendResult(result, res);
     }
-  },
+  }
 );
 
 const port = process.env.PORT || 4000;
 
 app.get("/transactions", async (req, res) => {
-  const transactions = await convert();
   res.json(transactions);
 });
 

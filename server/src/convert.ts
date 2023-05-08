@@ -8,13 +8,13 @@ config();
 
 const dir = process.env.FILES_DIR ?? "";
 
-export const convert = async () => {
+export const convert = async (): Promise<Transaction[]> => {
   if (!dir) {
     console.log(resolve("server", "sample", "transactions.json"));
     return JSON.parse(
       readFileSync(resolve("server", "sample", "transactions.json"), {
         encoding: "utf8",
-      }),
+      })
     );
   }
 
@@ -44,7 +44,7 @@ export const convert = async () => {
                 .substring(0, 8) ===
               sanitizePayee(curr.desc)
                 .replace(/[^a-zA-Z0-9]/g, "")
-                .substring(0, 8),
+                .substring(0, 8)
           );
 
           return [
@@ -65,10 +65,10 @@ export const convert = async () => {
             },
           ];
         },
-        [],
+        []
       );
       return data;
-    }),
+    })
   );
   return [].concat(...converted) as Transaction[];
 };

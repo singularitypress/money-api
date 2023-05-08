@@ -10,6 +10,15 @@ export const Nav = () => {
   const [isOpen, setIsOpen] = useState(false);
   const toggle = () => setIsOpen(!isOpen);
 
+  const links: {
+    [key: string]: string;
+  } = {
+    Spending: "/spending",
+    "Spending Comparisons": "/spending-comparisons",
+    Payroll: "/payroll",
+    "Mortgage Stats": "/mortgage-stats",
+  };
+
   return (
     <nav className="flex items-center justify-between flex-wrap bg-gray-800 p-6 w-full fixed z-50">
       <div className="flex items-center flex-shrink-0 text-white mr-6">
@@ -47,20 +56,17 @@ export const Nav = () => {
           isOpen ? "block" : "hidden"
         } w-full block flex-grow lg:flex lg:items-center lg:w-auto`}
       >
-        <div className="text-sm lg:flex-grow">
-          <Link
-            href="/spending"
-            className="block mt-4 lg:inline-block lg:mt-0 text-gray-200 hover:text-white mr-4"
-          >
-            Spending
-          </Link>
-          <Link
-            href="/payroll"
-            className="block mt-4 lg:inline-block lg:mt-0 text-gray-200 hover:text-white mr-4"
-          >
-            Payroll
-          </Link>
-        </div>
+        <ul className="text-sm lg:flex-grow">
+          {Object.keys(links).map((link) => (
+            <Link
+              key={link}
+              href={links[link]}
+              className="block font-bold lg:inline-block lg:mt-0 text-gray-200 border-2 border-transparent border-dotted hover:border-b-gray-200 mr-4"
+            >
+              {link}
+            </Link>
+          ))}
+        </ul>
       </div>
     </nav>
   );

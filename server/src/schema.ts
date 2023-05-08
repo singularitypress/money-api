@@ -49,69 +49,69 @@ const typeDefs = /* GraphQL */ `
   }
 `;
 
-export const schema = makeExecutableSchema({
-  typeDefs,
-  resolvers: {
-    Query: {
-      transactions: async (
-        parent,
-        {
-          startDate,
-          endDate,
-          minAmt,
-          maxAmt,
-          institutions,
-          accounts,
-          info,
-          desc,
-          excludeString,
-        }: TransactionResolver
-      ) => {
-        const transactions: Transaction[] = await convert();
-        const filtered = transactions.filter((transaction) => {
-          const {
-            date,
-            amt,
-            institution,
-            account,
-            info: transactionInfo,
-            desc: transactionDesc,
-          } = transaction;
-          const dateInRange =
-            startDate && endDate
-              ? new Date(date) >= new Date(startDate) &&
-                new Date(date) <= new Date(endDate)
+export const schema = (transactions: Transaction[]) =>
+  makeExecutableSchema({
+    typeDefs,
+    resolvers: {
+      Query: {
+        transactions: async (
+          parent,
+          {
+            startDate,
+            endDate,
+            minAmt,
+            maxAmt,
+            institutions,
+            accounts,
+            info,
+            desc,
+            excludeString,
+          }: TransactionResolver
+        ) => {
+          const filtered = transactions.filter((transaction) => {
+            const {
+              date,
+              amt,
+              institution,
+              account,
+              info: transactionInfo,
+              desc: transactionDesc,
+            } = transaction;
+            const dateInRange =
+              startDate && endDate
+                ? new Date(date) >= new Date(startDate) &&
+                  new Date(date) <= new Date(endDate)
+                : true;
+            const amtInRange =
+              minAmt && maxAmt
+                ? amt >= parseFloat(minAmt) && amt <= parseFloat(maxAmt)
+                : true;
+            const institutionInList = institutions
+              ? institutions.includes(institution)
               : true;
-          const amtInRange =
-            minAmt && maxAmt
-              ? amt >= parseFloat(minAmt) && amt <= parseFloat(maxAmt)
+            const accountInList = accounts ? accounts.includes(account) : true;
+            const infoInList = info ? transactionInfo.includes(info) : true;
+            const descInList = desc
+              ? desc.some((descString) => transactionDesc.includes(descString))
               : true;
-          const institutionInList = institutions
-            ? institutions.includes(institution)
-            : true;
-          const accountInList = accounts ? accounts.includes(account) : true;
-          const infoInList = info ? transactionInfo.includes(info) : true;
-          const descInList = desc
-            ? desc.some((descString) => transactionDesc.includes(descString))
-            : true;
-          const excludeStringInList = excludeString
-            ? !excludeString.some((excludeString) =>
-                transactionDesc.includes(excludeString)
-              )
-            : true;
+            const excludeStringInList = excludeString
+              ? !excludeString.some((excludeString) =>
+                  transactionDesc.includes(excludeString)
+                )
+              : true;
 
-          return (
-            dateInRange &&
-            amtInRange &&
-            institutionInList &&
-            accountInList &&
-            infoInList &&
-            descInList &&
-            excludeStringInList
-          );
-        });
-        return filtered;
+            return (
+              dateInRange &&
+              amtInRange &&
+              institutionInList &&
+              accountInList &&
+              infoInList &&
+              descInList &&
+              excludeStringInList
+            );
+          });
+          return filtered;
+        },
       },
     },
-  },
-});
+  });
