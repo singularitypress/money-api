@@ -21,3 +21,12 @@ export interface TransactionResolver {
   desc?: string[];
   excludeString?: string[];
 }
+
+export interface AmortizationTableRow {
+  paymentNumber: number;
+  paymentDate: Date;
+  balance: number;
+  principal: number;
+  interest: number;
+  payment: number;
+}
