@@ -13,7 +13,7 @@ export default function MortgageStats({}) {
 
   const [principal, setPrincipal] = useState(400000);
   const [interest, setInterest] = useState(0.065);
-  const [term, setTerm] = useState(30);
+  const [term, setTerm] = useState(360);
   const [paymentFrequency, setPaymentFrequency] = useState(12);
   const [startDate, setStartDate] = useState(new Date());
 
@@ -121,7 +121,9 @@ export default function MortgageStats({}) {
           </div>
         </form>
         <details className="mb-8">
-          <summary className="text-xl font-bold">Amortization Table</summary>
+          <summary className="text-xl font-bold cursor-pointer">
+            Amortization Table
+          </summary>
           <table className="table-auto w-full">
             <thead>
               <tr>
@@ -205,6 +207,11 @@ export default function MortgageStats({}) {
             />
           </div>
         </div>
+        <details className="mb-8">
+          <summary className="text-xl font-bold cursor-pointer">
+            Bar Chart
+          </summary>
+        </details>
       </Container>
     </>
   );

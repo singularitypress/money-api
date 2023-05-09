@@ -4,7 +4,7 @@ import axios from "axios";
 import { SegmentedControl } from "@components/form";
 import { useState } from "react";
 import { LineChart, PieChart } from "@components/charts";
-import { Modal } from "@components/ui";
+import { Container, Modal } from "@components/ui";
 
 interface Props {
   monthlyPayrollPerYear: {
@@ -27,7 +27,7 @@ const convertToMonthly = (
       y: number;
       transactions: Transaction[];
     }[];
-  }[],
+  }[]
 ) => {
   return data.reduce(
     (acc, curr) => {
@@ -56,13 +56,13 @@ const convertToMonthly = (
         y: number;
         transactions: Transaction[];
       }[];
-    },
+    }
   );
 };
 
 export default function Home({ monthlyPayrollPerYear }: Props) {
   const [payrollType, setPayrollType] = useState<ChartType>(
-    "Monthly Amount Per Year",
+    "Monthly Amount Per Year"
   );
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -77,26 +77,30 @@ export default function Home({ monthlyPayrollPerYear }: Props) {
 
   return (
     <>
-      <h1>Home</h1>
-      <div className="h-screen">
-        <h2>Nivo line chart for Monthly Payroll</h2>
-        <SegmentedControl
-          options={["Monthly Amount Per Year", "Monthly Amount"] as ChartType[]}
-          value={payrollType}
-          onClick={(e) => {
-            setPayrollType(e.currentTarget.value as ChartType);
-          }}
-        />
-        <div className="w-full h-96">
-          <LineChart
-            data={chartData[payrollType]}
-            onClick={(d) => {
-              setSelectedTransactions((d.data as any).transactions);
-              setModalVisible(true);
+      <Container>
+        <h1>Home</h1>
+        <div className="h-screen">
+          <h2>Nivo line chart for Monthly Payroll</h2>
+          <SegmentedControl
+            options={
+              ["Monthly Amount Per Year", "Monthly Amount"] as ChartType[]
+            }
+            value={payrollType}
+            onClick={(e) => {
+              setPayrollType(e.currentTarget.value as ChartType);
             }}
           />
+          <div className="w-full h-96">
+            <LineChart
+              data={chartData[payrollType]}
+              onClick={(d) => {
+                setSelectedTransactions((d.data as any).transactions);
+                setModalVisible(true);
+              }}
+            />
+          </div>
         </div>
-      </div>
+      </Container>
       <Modal visible={modalVisible} toggleVisibility={setModalVisible}>
         <h1>Modal</h1>
         <div className="h-screen">
@@ -106,8 +110,8 @@ export default function Home({ monthlyPayrollPerYear }: Props) {
                 id: payee,
                 value: Math.abs(
                   Number(
-                    spendingByPayee(selectedTransactions)[payee].amt.toFixed(2),
-                  ),
+                    spendingByPayee(selectedTransactions)[payee].amt.toFixed(2)
+                  )
                 ),
                 label: payee,
                 color: `hsl(${index * 10}, 70%, 50%)`,
@@ -115,7 +119,7 @@ export default function Home({ monthlyPayrollPerYear }: Props) {
               .sort(
                 (a, b) =>
                   spendingByPayee(selectedTransactions)[a.id].amt -
-                  spendingByPayee(selectedTransactions)[b.id].amt,
+                  spendingByPayee(selectedTransactions)[b.id].amt
               )
               .slice(0, 10)}
           />
@@ -167,9 +171,9 @@ export async function getStaticProps() {
               y: monthlyAmountPerYear(payroll)[year][month].amt.toFixed(2),
               transactions:
                 monthlyAmountPerYear(payroll)[year][month].transactions,
-            }),
+            })
           ),
-        }),
+        })
       ),
     },
   };
