@@ -5,6 +5,7 @@ import Head from "next/head";
 import { useEffect, useState } from "react";
 import { LineChart } from "@components/charts";
 import { Serie } from "@nivo/line";
+import { Container } from "@components/ui";
 
 interface Props {
   descList: string[];
@@ -107,29 +108,36 @@ export default function SpendingComparisons({ descList }: Props) {
         <title>Spending Comparisons</title>
       </Head>
 
-      <div className="min-h-screen flex flex-col items-center">
-        <div className="container h-full grow">
-          <Select
-            id="inclusion"
-            placeholder="Select a description to include"
-            isMulti
-            isSearchable
-            options={options}
-            onChange={(e) => setSelectedInclusion([...e])}
-            defaultValue={selectedInclusion}
-          />
-          <div className="mt-8 h-96">
-            <LineChart
-              data={data}
-              xScale={{
-                type: "time",
-                format: "%Y-%m-%d",
-                precision: "month",
-                useUTC: false,
-              }}
+      <div className="min-h-screen">
+        <Container>
+          <h1 className="text-3xl font-bold my-8">Spending Comparisons</h1>
+          <details className="mb-8">
+            <summary className="text-lg font-bold cursor-pointer">
+              Compare Payees
+            </summary>
+            <Select
+              className="mt-8"
+              id="inclusion"
+              placeholder="Select a description to include"
+              isMulti
+              isSearchable
+              options={options}
+              onChange={(e) => setSelectedInclusion([...e])}
+              defaultValue={selectedInclusion}
             />
-          </div>
-        </div>
+            <div className="mt-8 h-96">
+              <LineChart
+                data={data}
+                xScale={{
+                  type: "time",
+                  format: "%Y-%m-%d",
+                  precision: "month",
+                  useUTC: false,
+                }}
+              />
+            </div>
+          </details>
+        </Container>
       </div>
     </>
   );
@@ -139,7 +147,7 @@ export default function SpendingComparisons({ descList }: Props) {
 export async function getStaticProps() {
   const {
     data: {
-      data: { spending },
+      data: { spending, payroll },
     },
   } = await axios.post(`${process.env.API_URL}/graphql`, {
     query: /* GraphQL */ `
@@ -158,6 +166,16 @@ export async function getStaticProps() {
         ) {
           desc
         }
+        payroll: transactions(
+          maxAmt: "10000000.00"
+          minAmt: "0.00"
+          startDate: "2020-01-01"
+          endDate: "2023-12-31"
+          desc: ${process.env.PAYROLL_TRANSACTIONS}
+        ) {
+          amt
+          date
+        }
       }
     `,
   });
@@ -165,6 +183,36 @@ export async function getStaticProps() {
   return {
     props: {
       descList: [...new Set((spending as Transaction[]).map((s) => s.desc))],
+      payroll: Object.keys(
+        (payroll as Transaction[]).reduce((acc, curr) => {
+          const date = new Date(curr.date);
+          const month = `${date.getFullYear()}-${date.getMonth() + 1}`;
+          if (acc[month]) {
+            acc[month] += curr.amt;
+          } else {
+            acc[month] = curr.amt;
+          }
+          return acc;
+        }, {} as { [key: string]: number })
+      )
+        .map((key) => ({
+          x: new Date(
+            new Date(key).getTime() + 1000 * 60 * 60 * 24
+          ).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          }),
+          y: (payroll as Transaction[]).reduce((acc, curr) => {
+            const date = new Date(curr.date);
+            const month = `${date.getFullYear()}-${date.getMonth() + 1}`;
+            if (month === key) {
+              acc += curr.amt;
+            }
+            return acc;
+          }, 0),
+        }))
+        .sort((a, b) => new Date(a.x).getTime() - new Date(b.x).getTime()),
     },
   };
 }

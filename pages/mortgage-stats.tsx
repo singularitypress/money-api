@@ -3,6 +3,7 @@ import { AmortizationTableRow } from "@types";
 import { calculateAmortizationTable } from "@utils";
 import Head from "next/head";
 import { useEffect, useState } from "react";
+import { ResponsiveBar } from "@nivo/bar";
 
 export default function MortgageStats({}) {
   const inputClasses = "border border-gray-300 p-2 rounded-md";
@@ -206,11 +207,106 @@ export default function MortgageStats({}) {
               readOnly
             />
           </div>
+          {/* Calculated payment per month based on Total Payments */}
+          <div className="flex flex-col">
+            <label className={labelClasses} htmlFor="payment">
+              Payment Averaged Per Month
+            </label>
+            <input
+              className={inputClasses}
+              type="number"
+              name="payment"
+              id="payment"
+              value={(
+                (amortization[0]?.payment * paymentFrequency) /
+                12
+              ).toFixed(2)}
+              readOnly
+            />
+          </div>
         </div>
         <details className="mb-8">
           <summary className="text-xl font-bold cursor-pointer">
             Bar Chart
           </summary>
+          <div className="w-full h-96">
+            <ResponsiveBar
+              data={
+                // every 12th payment
+                amortization
+                  .filter((row) => row.paymentNumber % paymentFrequency === 0)
+                  .map((row) => ({
+                    paymentNumber: row.paymentNumber,
+                    principal: row.principal,
+                    interest: row.interest,
+                  }))
+              }
+              keys={["principal", "interest"]}
+              indexBy="paymentNumber"
+              margin={{ top: 50, right: 130, bottom: 50, left: 60 }}
+              padding={0.3}
+              valueScale={{ type: "linear" }}
+              indexScale={{ type: "band", round: true }}
+              colors={{ scheme: "nivo" }}
+              borderColor={{ from: "color", modifiers: [["darker", 1.6]] }}
+              axisTop={null}
+              axisRight={null}
+              axisBottom={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: "Payment #",
+                legendPosition: "middle",
+                legendOffset: 32,
+              }}
+              axisLeft={{
+                tickSize: 5,
+                tickPadding: 5,
+                tickRotation: 0,
+                legend: "Amount",
+                legendPosition: "middle",
+                legendOffset: -40,
+              }}
+              label={""}
+              tooltip={({ id, value, color, data }) => (
+                <div className="bg-white p-4 shadow-lg rounded-lg flex items-center justify-center">
+                  <div
+                    className="w-8 h-8 rounded-full mr-4"
+                    style={{ backgroundColor: color }}
+                  ></div>
+                  <strong>
+                    {id}: ${value.toFixed(2)}
+                    <br />
+                    total: ${(data.principal + data.interest).toFixed(2)}
+                  </strong>
+                </div>
+              )}
+              legends={[
+                {
+                  dataFrom: "keys",
+                  anchor: "bottom-right",
+                  direction: "column",
+                  justify: false,
+                  translateX: 120,
+                  translateY: 0,
+                  itemsSpacing: 2,
+                  itemWidth: 100,
+                  itemHeight: 20,
+                  itemDirection: "left-to-right",
+                  itemOpacity: 0.85,
+                  symbolSize: 20,
+                  effects: [
+                    {
+                      on: "hover",
+                      style: {
+                        itemOpacity: 1,
+                      },
+                    },
+                  ],
+                },
+              ]}
+            />
+          </div>
         </details>
       </Container>
     </>

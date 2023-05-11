@@ -2,7 +2,6 @@ import { Transaction } from "@types";
 import {
   convertToMonthly,
   convertToTransactionSerie,
-  monthlyAmountPerYear,
   spendingByPayee,
 } from "@utils";
 import axios from "axios";
@@ -127,7 +126,7 @@ export default function Home({ data, descList }: Props) {
               defaultValue={selectedInclusion}
             />
           </div>
-          <div className="w-full h-3/4">{chartData[spendingType]}</div>
+          <div className="w-full h-96">{chartData[spendingType]}</div>
         </div>
       </Container>
       <Modal visible={modalVisible} toggleVisibility={setModalVisible}>
