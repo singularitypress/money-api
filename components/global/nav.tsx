@@ -17,6 +17,7 @@ export const Nav = () => {
     "Spending Comparisons": "/spending-comparisons",
     Payroll: "/payroll",
     "Mortgage Stats": "/mortgage-stats",
+    Saving: "/saving",
   };
 
   return (

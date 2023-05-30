@@ -160,7 +160,6 @@ export default function MortgageStats({}) {
             </tbody>
           </table>
         </details>
-        {/* use grid tailwindcss */}
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 mb-8">
           <div className="flex flex-col">
             <label className={labelClasses} htmlFor="total-interest">

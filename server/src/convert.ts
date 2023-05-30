@@ -6,11 +6,12 @@ import { Transaction } from "@types";
 import { sanitizePayee } from "./sanitize-payee";
 config();
 
-const dir = process.env.FILES_DIR ?? "";
+const dir = resolve("db");
 
 export const convert = async (): Promise<Transaction[]> => {
-  if (!dir) {
-    console.log(resolve("server", "sample", "transactions.json"));
+  const files = readdirSync(dir).filter((file) => file.endsWith(".csv"));
+
+  if (files.length === 0) {
     return JSON.parse(
       readFileSync(resolve("server", "sample", "transactions.json"), {
         encoding: "utf8",
@@ -18,7 +19,6 @@ export const convert = async (): Promise<Transaction[]> => {
     );
   }
 
-  const files = readdirSync(dir);
   const converted = await Promise.all(
     files.map(async (file) => {
       const [institution, account, info = ""] = file
