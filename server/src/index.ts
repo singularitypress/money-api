@@ -9,10 +9,12 @@ import {
 } from "graphql-helix";
 import cors from "cors";
 import { schema } from "./schema";
+import { getCPI } from "./cpi";
 
 const app = express();
 
 const transactions = convert();
+const cpi = getCPI();
 
 app.use(express.json());
 
@@ -47,7 +49,7 @@ app.use(
         query,
         variables,
         request,
-        schema: schema(await transactions),
+        schema: schema(await transactions, await cpi),
       });
 
       // processRequest returns one of three types of results depending on how the server should respond
@@ -58,7 +60,7 @@ app.use(
       // See "Advanced Usage" below for more details and customizations available on that layer.
       sendResult(result, res);
     }
-  }
+  },
 );
 
 const port = process.env.PORT || 4000;

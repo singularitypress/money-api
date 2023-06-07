@@ -3,8 +3,7 @@
  */
 
 import { makeExecutableSchema } from "@graphql-tools/schema";
-import { convert } from "./convert";
-import { Transaction, TransactionResolver } from "@types";
+import { CPIResponse, Transaction, TransactionResolver } from "@types";
 
 /**
  * Transactions resolver that takes in args and returns a list of transactions,
@@ -34,6 +33,18 @@ const typeDefs = /* GraphQL */ `
     credit: String
   }
 
+  type CPIMonth {
+    d: String
+    STATIC_TOTALCPICHANGE: Float
+    CPI_MEDIAN: Float
+    CPI_TRIM: Float
+    STATIC_CPIXFET: Float
+    CPI_COMMON: Float
+    CPIW: Float
+    V41690973: Float
+    V41690914: Float
+  }
+
   type Query {
     transactions(
       startDate: String
@@ -46,10 +57,12 @@ const typeDefs = /* GraphQL */ `
       desc: [String]
       excludeString: [String]
     ): [Transaction]
+
+    cpi(startDate: String, endDate: String): [CPIMonth]
   }
 `;
 
-export const schema = (transactions: Transaction[]) =>
+export const schema = (transactions: Transaction[], cpi?: CPIResponse) =>
   makeExecutableSchema({
     typeDefs,
     resolvers: {
@@ -66,7 +79,7 @@ export const schema = (transactions: Transaction[]) =>
             info,
             desc,
             excludeString,
-          }: TransactionResolver
+          }: TransactionResolver,
         ) => {
           const filtered = transactions.filter((transaction) => {
             const {
@@ -96,7 +109,7 @@ export const schema = (transactions: Transaction[]) =>
               : true;
             const excludeStringInList = excludeString
               ? !excludeString.some((excludeString) =>
-                  transactionDesc.includes(excludeString)
+                  transactionDesc.includes(excludeString),
                 )
               : true;
 
@@ -111,6 +124,30 @@ export const schema = (transactions: Transaction[]) =>
             );
           });
           return filtered;
+        },
+        cpi: async (parent, { startDate, endDate }) => {
+          if (!cpi) {
+            return [];
+          }
+          const filtered = cpi.observations.filter((month) => {
+            const dateInRange =
+              startDate && endDate
+                ? new Date(month.d) >= new Date(startDate) &&
+                  new Date(month.d) <= new Date(endDate)
+                : true;
+            return dateInRange;
+          });
+          return filtered.map((month) => ({
+            ...month,
+            CPI_COMMON: parseFloat(month.CPI_COMMON.v),
+            CPI_MEDIAN: parseFloat(month.CPI_MEDIAN.v),
+            CPI_TRIM: parseFloat(month.CPI_TRIM.v),
+            CPIW: parseFloat(month.CPIW.v),
+            STATIC_CPIXFET: parseFloat(month.STATIC_CPIXFET.v),
+            STATIC_TOTALCPICHANGE: parseFloat(month.STATIC_TOTALCPICHANGE.v),
+            V41690914: parseFloat(month.V41690914.v),
+            V41690973: parseFloat(month.V41690973.v),
+          }));
         },
       },
     },

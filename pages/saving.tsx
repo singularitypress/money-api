@@ -1,17 +1,27 @@
+import { Input } from "@components/form";
 import { Container } from "@components/ui";
+import axios from "axios";
+import { GetStaticProps } from "next";
 import Head from "next/head";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
-export default function Saving({}) {
+export default function Saving({
+  cpiYtd,
+}: {
+  cpiYtd: {
+    d: string;
+    STATIC_TOTALCPICHANGE: number;
+  }[];
+}) {
   const [currentSavings, setCurrentSavings] = useState(0);
-  const [inflationRate, setInflationRate] = useState(0);
+  const [inflationRate, setInflationRate] = useState(
+    cpiYtd[cpiYtd.length - 1].STATIC_TOTALCPICHANGE,
+  );
   const [annualSavingsDeposit, setAnnualSavingsDeposit] = useState(0);
-  const [yearsUntilRetirement, setYearsUntilRetirement] = useState(1);
-  const [savingsInvested, setSavingsInvested] = useState(0);
-  const [investmentReturnPercentage, setInvestmentReturnPercentage] =
-    useState(0);
+  const [yearsUntilRetirement, setYearsUntilRetirement] = useState(30);
   const [investments, setInvestments] = useState<
     {
+      id: string;
       savings: number;
       interest: number;
     }[]
@@ -19,12 +29,14 @@ export default function Saving({}) {
   const currentYear = new Date().getFullYear();
 
   const calculate = (yearIndex: number) => {
-    return (
-      currentSavings +
-      savingsInvested *
-        Math.pow(1 + investmentReturnPercentage / 100, yearIndex) +
-      annualSavingsDeposit * yearIndex
-    );
+    const investmentsTotal = investments.reduce((acc, investment) => {
+      return (
+        acc +
+        investment.savings * Math.pow(1 + investment.interest / 100, yearIndex)
+      );
+    }, 0);
+
+    return currentSavings + investmentsTotal + annualSavingsDeposit * yearIndex;
   };
 
   return (
@@ -37,128 +49,121 @@ export default function Saving({}) {
         <div className="my-8 grid gap-4">
           <form className="w-full grid gap-4">
             <div className="w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <div className="w-full px-3">
-                <label
-                  className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="current-savings"
-                >
-                  Current Savings
-                </label>
-                <input
-                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                  id="current-savings"
-                  type="number"
-                  placeholder="Current Savings"
-                  value={currentSavings}
-                  onChange={(e) => setCurrentSavings(+e.target.value)}
-                />
-                <p className="text-gray-600 text-xs italic">
-                  Enter your current savings
-                </p>
-              </div>
-              <div className="w-full px-3">
-                <label
-                  className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="inflation-rate"
-                >
-                  Inflation Rate
-                </label>
-                <input
-                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                  id="inflation-rate"
-                  type="number"
-                  placeholder="Inflation Rate"
-                  value={inflationRate}
-                  step={0.01}
-                  onChange={(e) => setInflationRate(+e.target.value)}
-                />
-                <p className="text-gray-600 text-xs italic">
-                  Enter the inflation rate
-                </p>
-              </div>
-              <div className="w-full px-3">
-                <label
-                  className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="inflation-rate"
-                >
-                  Annual Savings Deposit
-                </label>
-                <input
-                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                  id="inflation-rate"
-                  type="number"
-                  placeholder="Annual Savings Deposit"
-                  value={annualSavingsDeposit}
-                  step={0.01}
-                  onChange={(e) => setAnnualSavingsDeposit(+e.target.value)}
-                />
-                <p className="text-gray-600 text-xs italic">
-                  Enter the Annual Savings Deposit
-                </p>
-              </div>
-              <div className="w-full px-3">
-                <label
-                  className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="years-until-retirement"
-                >
-                  Years Until Retirement
-                </label>
-                <input
-                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                  id="years-until-retirement"
-                  type="number"
-                  placeholder="Years Until Retirement"
-                  value={yearsUntilRetirement}
-                  onChange={(e) => setYearsUntilRetirement(+e.target.value)}
-                />
-                <p className="text-gray-600 text-xs italic">
-                  Enter the Years Until Retirement
-                </p>
-              </div>
-              <div className="w-full px-3">
-                <label
-                  className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="savings-invested"
-                >
-                  Savings Invested
-                </label>
-                <input
-                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                  id="savings-invested"
-                  type="number"
-                  placeholder="Savings Invested"
-                  value={savingsInvested}
-                  onChange={(e) => setSavingsInvested(+e.target.value)}
-                />
-                <p className="text-gray-600 text-xs italic">
-                  Enter the Savings Invested
-                </p>
-              </div>
-              <div className="w-full px-3">
-                <label
-                  className="block uppercase tracking-wide text-gray-700 text-xs font-bold mb-2"
-                  htmlFor="investment-return-percentage"
-                >
-                  Investment Return Percentage
-                </label>
-                <input
-                  className="appearance-none block w-full bg-gray-200 text-gray-700 border border-gray-200 rounded py-3 px-4 mb-3 leading-tight focus:outline-none focus:bg-white"
-                  id="investment-return-percentage"
-                  type="number"
-                  placeholder="Investment Return Percentage"
-                  value={investmentReturnPercentage}
-                  step={0.01}
-                  onChange={(e) =>
-                    setInvestmentReturnPercentage(+e.target.value)
-                  }
-                />
-                <p className="text-gray-600 text-xs italic">
-                  Enter the Investment Return Percentage
-                </p>
-              </div>
+              <Input
+                label="Current Savings"
+                name="current-savings"
+                value={currentSavings}
+                onChange={(e) => setCurrentSavings(+e.target.value)}
+                description="Enter your current savings"
+                type="number"
+              />
+              <Input
+                label="Inflation Rate"
+                name="inflation-rate"
+                value={inflationRate}
+                onChange={(e) => setInflationRate(+e.target.value)}
+                description="Enter the inflation rate"
+                type="number"
+                step={0.01}
+              />
+              <Input
+                label="Annual Savings Deposit"
+                name="annual-savings-deposit"
+                value={annualSavingsDeposit}
+                onChange={(e) => setAnnualSavingsDeposit(+e.target.value)}
+                description="Enter the annual savings deposit"
+                type="number"
+                step={0.01}
+              />
+              <Input
+                label="Years Until Retirement"
+                name="years-until-retirement"
+                value={yearsUntilRetirement}
+                onChange={(e) => setYearsUntilRetirement(+e.target.value)}
+                description="Enter the years until retirement"
+                type="number"
+              />
+              <button
+                className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setInvestments([
+                    ...investments,
+                    {
+                      id: `${Math.random()}`,
+                      savings: 0,
+                      interest: 0,
+                    },
+                  ]);
+                }}
+              >
+                Add Investment
+              </button>
+            </div>
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {investments.map((investment) => {
+                return (
+                  <Fragment key={investment.id}>
+                    <Input
+                      label={`Investment Savings ${investment.id}`}
+                      name="investment-savings"
+                      value={investment.savings}
+                      onChange={(e) => {
+                        const newInvestments = investments.map((i) => {
+                          if (i.id === investment.id) {
+                            return {
+                              ...i,
+                              savings: +e.target.value,
+                            };
+                          }
+                          return i;
+                        });
+                        setInvestments(newInvestments);
+                      }}
+                      description="Enter the investment savings"
+                      type="number"
+                      step={0.01}
+                    />
+                    <Input
+                      label={`Investment Interest ${investment.id}`}
+                      name="investment-interest"
+                      value={investment.interest}
+                      onChange={(e) => {
+                        const newInvestments = investments.map((i) => {
+                          if (i.id === investment.id) {
+                            return {
+                              ...i,
+                              interest: +e.target.value,
+                            };
+                          }
+                          return i;
+                        });
+                        setInvestments(newInvestments);
+                      }}
+                      description="Enter the investment interest"
+                      type="number"
+                      step={0.01}
+                    />
+                    <div>
+                      <button
+                        className="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-3 px-4 rounded"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          const newInvestments = investments.filter(
+                            (i) => i.id !== investment.id,
+                          );
+                          setInvestments(newInvestments);
+                        }}
+                      >
+                        Remove Investment
+                      </button>
+                    </div>
+                    <div></div>
+                  </Fragment>
+                );
+              })}
             </div>
             <hr />
-            <div className="w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
           </form>
           {/* Display the value of savings adjusted for inflation over 50 years in a tailwindcss table for every year. */}
           <div className="flex flex-col w-full flex-1 ">
@@ -208,3 +213,33 @@ export default function Saving({}) {
     </>
   );
 }
+
+export const getStaticProps: GetStaticProps = async () => {
+  // get start of year as YYYY-MM-DD
+  const currentYear = new Date().getFullYear();
+  const startDate = `${currentYear}-01-01`;
+
+  // get end of year as YYYY-MM-DD
+  const endDate = `${currentYear}-12-31`;
+
+  const {
+    data: {
+      data: { cpi },
+    },
+  } = await axios.post(`${process.env.API_URL}/graphql`, {
+    query: /* GraphQL */ `
+      {
+        cpi(endDate: "2023-12-31") {
+          STATIC_TOTALCPICHANGE
+          d
+        }
+      }
+    `,
+  });
+
+  return {
+    props: {
+      cpiYtd: cpi,
+    },
+  };
+};

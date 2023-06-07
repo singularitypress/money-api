@@ -30,3 +30,53 @@ export interface AmortizationTableRow {
   interest: number;
   payment: number;
 }
+
+export interface CPIObservation {
+  d: string;
+  STATIC_TOTALCPICHANGE: {
+    v: string;
+  };
+  CPI_MEDIAN: {
+    v: string;
+  };
+  CPI_TRIM: {
+    v: string;
+  };
+  STATIC_CPIXFET: {
+    v: string;
+  };
+  CPI_COMMON: {
+    v: string;
+  };
+  CPIW: {
+    v: string;
+  };
+  V41690973: {
+    v: string;
+  };
+  V41690914: {
+    v: string;
+  };
+}
+
+export interface CPIResponse {
+  groupDetail: {
+    label: string;
+    description: string;
+    link: string;
+  };
+  terms: {
+    url: string;
+  };
+  seriesDetail: {
+    [key: string]: {
+      label: string;
+      description: string;
+      dimension: {
+        key: string;
+        name: string;
+      };
+    };
+  };
+  observations: CPIObservation[];
+}
