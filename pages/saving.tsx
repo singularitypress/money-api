@@ -5,6 +5,8 @@ import { GetStaticProps } from "next";
 import Head from "next/head";
 import { Fragment, useState } from "react";
 
+const currentYear = new Date().getFullYear();
+
 export default function Saving({
   cpiYtd,
 }: {
@@ -13,30 +15,29 @@ export default function Saving({
     STATIC_TOTALCPICHANGE: number;
   }[];
 }) {
-  const [currentSavings, setCurrentSavings] = useState(0);
   const [inflationRate, setInflationRate] = useState(
     cpiYtd.length > 0 ? cpiYtd[cpiYtd.length - 1].STATIC_TOTALCPICHANGE : 0,
   );
-  const [annualSavingsDeposit, setAnnualSavingsDeposit] = useState(0);
   const [yearsUntilRetirement, setYearsUntilRetirement] = useState(30);
   const [investments, setInvestments] = useState<
     {
       id: string;
       savings: number;
       interest: number;
+      annualSavingsDeposit: number;
     }[]
   >([]);
-  const currentYear = new Date().getFullYear();
 
   const calculate = (yearIndex: number) => {
     const investmentsTotal = investments.reduce((acc, investment) => {
       return (
         acc +
-        investment.savings * Math.pow(1 + investment.interest / 100, yearIndex)
+        (investment.savings + investment.annualSavingsDeposit) *
+          Math.pow(1 + investment.interest / 100, yearIndex)
       );
     }, 0);
 
-    return currentSavings + investmentsTotal + annualSavingsDeposit * yearIndex;
+    return investmentsTotal;
   };
 
   return (
@@ -50,28 +51,11 @@ export default function Saving({
           <form className="w-full grid gap-4">
             <div className="w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <Input
-                label="Current Savings"
-                name="current-savings"
-                value={currentSavings}
-                onChange={(e) => setCurrentSavings(+e.target.value)}
-                description="Enter your current savings"
-                type="number"
-              />
-              <Input
                 label="Inflation Rate"
                 name="inflation-rate"
                 value={inflationRate}
                 onChange={(e) => setInflationRate(+e.target.value)}
                 description="Enter the inflation rate"
-                type="number"
-                step={0.01}
-              />
-              <Input
-                label="Annual Savings Deposit"
-                name="annual-savings-deposit"
-                value={annualSavingsDeposit}
-                onChange={(e) => setAnnualSavingsDeposit(+e.target.value)}
-                description="Enter the annual savings deposit"
                 type="number"
                 step={0.01}
               />
@@ -83,6 +67,8 @@ export default function Saving({
                 description="Enter the years until retirement"
                 type="number"
               />
+            </div>
+            <div className="w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
               <button
                 className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
                 onClick={(e) => {
@@ -93,11 +79,12 @@ export default function Saving({
                       id: `${Math.random()}`,
                       savings: 0,
                       interest: 0,
+                      annualSavingsDeposit: 0,
                     },
                   ]);
                 }}
               >
-                Add Investment
+                Add Savings
               </button>
             </div>
             <div className="w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -125,7 +112,7 @@ export default function Saving({
                       step={0.01}
                     />
                     <Input
-                      label={`Investment Interest ${investment.id}`}
+                      label={`Investment Interest/ Return ${investment.id}`}
                       name="investment-interest"
                       value={investment.interest}
                       onChange={(e) => {
@@ -144,6 +131,26 @@ export default function Saving({
                       type="number"
                       step={0.01}
                     />
+                    <Input
+                      label={`Investment Annual Savings Deposit ${investment.id}`}
+                      name="investment-annual-savings-deposit"
+                      value={investment.annualSavingsDeposit}
+                      onChange={(e) => {
+                        const newInvestments = investments.map((i) => {
+                          if (i.id === investment.id) {
+                            return {
+                              ...i,
+                              annualSavingsDeposit: +e.target.value,
+                            };
+                          }
+                          return i;
+                        });
+                        setInvestments(newInvestments);
+                      }}
+                      description="Enter the investment annual savings deposit"
+                      type="number"
+                      step={0.01}
+                    />
                     <div>
                       <button
                         className="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-3 px-4 rounded"
@@ -158,7 +165,6 @@ export default function Saving({
                         Remove Investment
                       </button>
                     </div>
-                    <div></div>
                   </Fragment>
                 );
               })}
