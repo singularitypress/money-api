@@ -93,7 +93,7 @@ export default function SpendingComparisons({ descList }: Props) {
               res.data.data[key].map(({ x, y }: { x: string; y: number }) => ({
                 x,
                 y: y * -1,
-              }))
+              })),
             ),
           });
         });
@@ -145,40 +145,47 @@ export default function SpendingComparisons({ descList }: Props) {
 
 // getStaticProps that fetches data from the GraphQL API from API_URL in .env
 export async function getStaticProps() {
-  const {
-    data: {
-      data: { spending, payroll },
-    },
-  } = await axios.post(`${process.env.API_URL}/graphql`, {
-    query: /* GraphQL */ `
-      query {
-        spending: transactions(
-          startDate: "2020-01-01"
-          endDate: "2023-12-31"
-          maxAmt: "0.00"
-          minAmt: "-1000000.00"
-          accounts: [
-            "visa"
-            "mastercard"
-            "amex"
-          ]
-          excludeString: ${process.env.EXCLUDED_TRANSACTIONS}
-        ) {
-          desc
+  let spending: Transaction[] = [];
+  let payroll: Transaction[] = [];
+  try {
+    const {
+      data: { data },
+    } = await axios.post(`${process.env.API_URL}/graphql`, {
+      query: /* GraphQL */ `
+        query {
+          spending: transactions(
+            startDate: "2020-01-01"
+            endDate: "2023-12-31"
+            maxAmt: "0.00"
+            minAmt: "-1000000.00"
+            accounts: [
+              "visa"
+              "mastercard"
+              "amex"
+            ]
+            excludeString: ${process.env.EXCLUDED_TRANSACTIONS}
+          ) {
+            desc
+          }
+          payroll: transactions(
+            maxAmt: "10000000.00"
+            minAmt: "0.00"
+            startDate: "2020-01-01"
+            endDate: "2023-12-31"
+            desc: ${process.env.PAYROLL_TRANSACTIONS}
+          ) {
+            amt
+            date
+          }
         }
-        payroll: transactions(
-          maxAmt: "10000000.00"
-          minAmt: "0.00"
-          startDate: "2020-01-01"
-          endDate: "2023-12-31"
-          desc: ${process.env.PAYROLL_TRANSACTIONS}
-        ) {
-          amt
-          date
-        }
-      }
-    `,
-  });
+      `,
+    });
+
+    spending = data.spending;
+    payroll = data.payroll;
+  } catch (e) {
+    console.warn(e);
+  }
 
   return {
     props: {
@@ -193,11 +200,11 @@ export async function getStaticProps() {
             acc[month] = curr.amt;
           }
           return acc;
-        }, {} as { [key: string]: number })
+        }, {} as { [key: string]: number }),
       )
         .map((key) => ({
           x: new Date(
-            new Date(key).getTime() + 1000 * 60 * 60 * 24
+            new Date(key).getTime() + 1000 * 60 * 60 * 24,
           ).toLocaleDateString("en-US", {
             year: "numeric",
             month: "short",

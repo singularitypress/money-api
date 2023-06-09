@@ -21,7 +21,7 @@ type ChartType = "Monthly Amount Per Year" | "Monthly Amount";
 
 export default function Home({ data, descList }: Props) {
   const [spendingType, setSpendingType] = useState<ChartType>(
-    "Monthly Amount Per Year"
+    "Monthly Amount Per Year",
   );
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -138,8 +138,8 @@ export default function Home({ data, descList }: Props) {
                 id: payee,
                 value: Math.abs(
                   Number(
-                    spendingByPayee(selectedTransactions)[payee].amt.toFixed(2)
-                  )
+                    spendingByPayee(selectedTransactions)[payee].amt.toFixed(2),
+                  ),
                 ),
                 label: payee,
                 color: `hsl(${index * 10}, 70%, 50%)`,
@@ -147,7 +147,7 @@ export default function Home({ data, descList }: Props) {
               .sort(
                 (a, b) =>
                   spendingByPayee(selectedTransactions)[a.id].amt -
-                  spendingByPayee(selectedTransactions)[b.id].amt
+                  spendingByPayee(selectedTransactions)[b.id].amt,
               )
               .slice(0, 10)}
           />
@@ -171,7 +171,7 @@ export default function Home({ data, descList }: Props) {
                   // reduce to merge transactions with same date and sum the amount and fill in missing days
                   .reduce((acc, curr) => {
                     const existing = acc.find(
-                      (a) => a.x.getDate() === curr.x.getDate()
+                      (a) => a.x.getDate() === curr.x.getDate(),
                     );
                     if (existing) {
                       existing.y += curr.y;
@@ -192,32 +192,36 @@ export default function Home({ data, descList }: Props) {
 
 // getStaticProps that fetches data from the GraphQL API from API_URL in .env
 export async function getStaticProps() {
-  const {
-    data: {
-      data: { spending },
-    },
-  } = await axios.post(`${process.env.API_URL}/graphql`, {
-    query: /* GraphQL */ `
-      query {
-        spending: transactions(
-          startDate: "2020-01-01"
-          endDate: "2023-12-31"
-          maxAmt: "0.00"
-          minAmt: "-1000000.00"
-          accounts: [
-            "visa"
-            "mastercard"
-            "amex"
-          ]
-          excludeString: ${process.env.EXCLUDED_TRANSACTIONS}
-        ) {
-          desc
-          amt
-          date
+  let spending: Transaction[] = [];
+  try {
+    const {
+      data: { data },
+    } = await axios.post(`${process.env.API_URL}/graphql`, {
+      query: /* GraphQL */ `
+        query {
+          spending: transactions(
+            startDate: "2020-01-01"
+            endDate: "2023-12-31"
+            maxAmt: "0.00"
+            minAmt: "-1000000.00"
+            accounts: [
+              "visa"
+              "mastercard"
+              "amex"
+            ]
+            excludeString: ${process.env.EXCLUDED_TRANSACTIONS}
+          ) {
+            desc
+            amt
+            date
+          }
         }
-      }
-    `,
-  });
+      `,
+    });
+    spending = data.spending;
+  } catch (e) {
+    console.warn(e);
+  }
 
   return {
     props: {

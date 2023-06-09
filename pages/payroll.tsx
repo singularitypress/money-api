@@ -27,7 +27,7 @@ const convertToMonthly = (
       y: number;
       transactions: Transaction[];
     }[];
-  }[]
+  }[],
 ) => {
   return data.reduce(
     (acc, curr) => {
@@ -56,13 +56,13 @@ const convertToMonthly = (
         y: number;
         transactions: Transaction[];
       }[];
-    }
+    },
   );
 };
 
 export default function Home({ monthlyPayrollPerYear }: Props) {
   const [payrollType, setPayrollType] = useState<ChartType>(
-    "Monthly Amount Per Year"
+    "Monthly Amount Per Year",
   );
   const [modalVisible, setModalVisible] = useState(false);
 
@@ -110,8 +110,8 @@ export default function Home({ monthlyPayrollPerYear }: Props) {
                 id: payee,
                 value: Math.abs(
                   Number(
-                    spendingByPayee(selectedTransactions)[payee].amt.toFixed(2)
-                  )
+                    spendingByPayee(selectedTransactions)[payee].amt.toFixed(2),
+                  ),
                 ),
                 label: payee,
                 color: `hsl(${index * 10}, 70%, 50%)`,
@@ -119,7 +119,7 @@ export default function Home({ monthlyPayrollPerYear }: Props) {
               .sort(
                 (a, b) =>
                   spendingByPayee(selectedTransactions)[a.id].amt -
-                  spendingByPayee(selectedTransactions)[b.id].amt
+                  spendingByPayee(selectedTransactions)[b.id].amt,
               )
               .slice(0, 10)}
           />
@@ -131,29 +131,33 @@ export default function Home({ monthlyPayrollPerYear }: Props) {
 
 // getStaticProps that fetches data from the GraphQL API from API_URL in .env
 export async function getStaticProps() {
-  const {
-    data: {
-      data: { payroll },
-    },
-  } = await axios.post(`${process.env.API_URL}/graphql`, {
-    query: /* GraphQL */ `
-      query {
-        payroll: transactions(
-          maxAmt: "10000000.00"
-          minAmt: "0.00"
-          startDate: "2020-01-01"
-          endDate: "2023-12-31"
-          desc: ${process.env.PAYROLL_TRANSACTIONS}
-        ) {
-          amt
-          desc
-          date
-          institution
-          account
+  let payroll: Transaction[] = [];
+  try {
+    const {
+      data: { data },
+    } = await axios.post(`${process.env.API_URL}/graphql`, {
+      query: /* GraphQL */ `
+        query {
+          payroll: transactions(
+            maxAmt: "10000000.00"
+            minAmt: "0.00"
+            startDate: "2020-01-01"
+            endDate: "2023-12-31"
+            desc: ${process.env.PAYROLL_TRANSACTIONS}
+          ) {
+            amt
+            desc
+            date
+            institution
+            account
+          }
         }
-      }
-    `,
-  });
+      `,
+    });
+    payroll = data.payroll;
+  } catch (e) {
+    console.warn(e);
+  }
 
   const monthName = (month: number) => {
     const date = new Date(2020, month, 1);
@@ -171,9 +175,9 @@ export async function getStaticProps() {
               y: monthlyAmountPerYear(payroll)[year][month].amt.toFixed(2),
               transactions:
                 monthlyAmountPerYear(payroll)[year][month].transactions,
-            })
+            }),
           ),
-        })
+        }),
       ),
     },
   };
