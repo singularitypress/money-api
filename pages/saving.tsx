@@ -15,7 +15,7 @@ export default function Saving({
 }) {
   const [currentSavings, setCurrentSavings] = useState(0);
   const [inflationRate, setInflationRate] = useState(
-    cpiYtd[cpiYtd.length - 1].STATIC_TOTALCPICHANGE,
+    cpiYtd.length > 0 ? cpiYtd[cpiYtd.length - 1].STATIC_TOTALCPICHANGE : 0,
   );
   const [annualSavingsDeposit, setAnnualSavingsDeposit] = useState(0);
   const [yearsUntilRetirement, setYearsUntilRetirement] = useState(30);
