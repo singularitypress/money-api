@@ -215,27 +215,27 @@ export default function Saving({
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  // get start of year as YYYY-MM-DD
-  const currentYear = new Date().getFullYear();
-  const startDate = `${currentYear}-01-01`;
-
-  // get end of year as YYYY-MM-DD
-  const endDate = `${currentYear}-12-31`;
-
-  const {
-    data: {
-      data: { cpi },
-    },
-  } = await axios.post(`${process.env.API_URL}/graphql`, {
-    query: /* GraphQL */ `
-      {
-        cpi(endDate: "2023-12-31") {
-          STATIC_TOTALCPICHANGE
-          d
+  let cpi = [] as {
+    STATIC_TOTALCPICHANGE: number;
+    d: string;
+  }[];
+  try {
+    const {
+      data: { data },
+    } = await axios.post(`${process.env.API_URL}/graphql`, {
+      query: /* GraphQL */ `
+        {
+          cpi(endDate: "2023-12-31") {
+            STATIC_TOTALCPICHANGE
+            d
+          }
         }
-      }
-    `,
-  });
+      `,
+    });
+    cpi = data.cpi;
+  } catch (error) {
+    console.warn(error);
+  }
 
   return {
     props: {
