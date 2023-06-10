@@ -87,12 +87,13 @@ export default function Saving({
                 Add Savings
               </button>
             </div>
-            <div className="w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {investments.map((investment) => {
-                return (
-                  <Fragment key={investment.id}>
+            {investments.map((investment) => {
+              return (
+                <div className="w-full grid gap-4" key={investment.id}>
+                  <strong>Investment {investment.id}</strong>
+                  <div className="w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     <Input
-                      label={`Investment Savings ${investment.id}`}
+                      label="Investment Savings"
                       name="investment-savings"
                       value={investment.savings}
                       onChange={(e) => {
@@ -112,7 +113,7 @@ export default function Saving({
                       step={0.01}
                     />
                     <Input
-                      label={`Investment Interest/ Return ${investment.id}`}
+                      label="Investment Interest/ Return"
                       name="investment-interest"
                       value={investment.interest}
                       onChange={(e) => {
@@ -132,7 +133,7 @@ export default function Saving({
                       step={0.01}
                     />
                     <Input
-                      label={`Investment Annual Savings Deposit ${investment.id}`}
+                      label="Investment Annual Savings Deposit"
                       name="investment-annual-savings-deposit"
                       value={investment.annualSavingsDeposit}
                       onChange={(e) => {
@@ -165,10 +166,10 @@ export default function Saving({
                         Remove Investment
                       </button>
                     </div>
-                  </Fragment>
-                );
-              })}
-            </div>
+                  </div>
+                </div>
+              );
+            })}
             <hr />
           </form>
           {/* Display the value of savings adjusted for inflation over 50 years in a tailwindcss table for every year. */}
