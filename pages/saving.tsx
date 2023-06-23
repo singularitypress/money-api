@@ -3,7 +3,8 @@ import { Container } from "@components/ui";
 import axios from "axios";
 import { GetStaticProps } from "next";
 import Head from "next/head";
-import { Fragment, useState } from "react";
+import { useState } from "react";
+import { v4 } from "uuid";
 
 const currentYear = new Date().getFullYear();
 
@@ -33,7 +34,7 @@ export default function Saving({
       return (
         acc +
         (investment.savings + investment.annualSavingsDeposit) *
-          Math.pow(1 + investment.interest / 100, yearIndex)
+        Math.pow(1 + investment.interest / 100, yearIndex)
       );
     }, 0);
 
@@ -45,7 +46,6 @@ export default function Saving({
       <Head>
         <title>Saving</title>
       </Head>
-      {/* Grid-based tailwindcss form that takes in your current savings and inflation rate */}
       <Container>
         <div className="my-8 grid gap-4">
           <form className="w-full grid gap-4">
@@ -76,7 +76,7 @@ export default function Saving({
                   setInvestments([
                     ...investments,
                     {
-                      id: `${Math.random()}`,
+                      id: v4(),
                       savings: 0,
                       interest: 0,
                       annualSavingsDeposit: 0,
@@ -172,7 +172,6 @@ export default function Saving({
             })}
             <hr />
           </form>
-          {/* Display the value of savings adjusted for inflation over 50 years in a tailwindcss table for every year. */}
           <div className="flex flex-col w-full flex-1 ">
             <table className="table-auto">
               <thead>

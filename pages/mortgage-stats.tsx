@@ -162,65 +162,58 @@ export default function MortgageStats() {
         </details>
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 mb-8">
           <div className="flex flex-col">
-            <label className={labelClasses} htmlFor="total-interest">
-              Total Interest
-            </label>
-            <input
-              className={inputClasses}
+            <Input
+              label="Total Interest"
               type="number"
               name="total-interest"
-              id="total-interest"
               value={amortization
                 .reduce((acc, row) => acc + row.interest, 0)
                 .toFixed(2)}
               readOnly
+              disabled
+              onChange={() => { }}
             />
           </div>
           <div className="flex flex-col">
-            <label className={labelClasses} htmlFor="total-principal">
-              Total Principal
-            </label>
-            <input
-              className={inputClasses}
+            <Input
+              label="Total Principal"
               type="number"
               name="total-principal"
-              id="total-principal"
               value={amortization
                 .reduce((acc, row) => acc + row.principal, 0)
                 .toFixed(2)}
               readOnly
+              disabled
+              onChange={() => { }}
             />
           </div>
           <div className="flex flex-col">
-            <label className={labelClasses} htmlFor="total-payments">
-              Total Payments
-            </label>
-            <input
-              className={inputClasses}
+            <Input
+              label="Total Payments"
               type="number"
               name="total-payments"
-              id="total-payments"
               value={amortization
                 .reduce((acc, row) => acc + row.payment, 0)
                 .toFixed(2)}
               readOnly
+              disabled
+              onChange={() => { }}
             />
           </div>
           {/* Calculated payment per month based on Total Payments */}
           <div className="flex flex-col">
-            <label className={labelClasses} htmlFor="payment">
-              Payment Averaged Per Month
-            </label>
-            <input
-              className={inputClasses}
+            <Input
+              label="Payment Averaged Per Month"
               type="number"
               name="payment"
-              id="payment"
+              placeholder="1000"
               value={(
                 (amortization[0]?.payment * paymentFrequency) /
                 12
               ).toFixed(2)}
               readOnly
+              disabled
+              onChange={() => { }}
             />
           </div>
         </div>

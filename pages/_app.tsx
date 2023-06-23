@@ -1,9 +1,6 @@
 import { Nav } from "@components/global";
 import "../styles/globals.scss";
 import type { AppProps } from "next/app";
-import { Inter } from "next/font/google";
-
-const inter = Inter({ subsets: ["latin"] });
 
 export default function App({
   Component,
@@ -12,7 +9,7 @@ export default function App({
   return (
     <>
       <Nav />
-      <main className={inter.className}>
+      <main>
         <Component {...pageProps} />
       </main>
     </>

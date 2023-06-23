@@ -9,6 +9,8 @@ interface Props {
   onChange: (e: ChangeEvent<HTMLInputElement>) => void;
   type?: HTMLInputTypeAttribute;
   step?: number;
+  disabled?: boolean;
+  readOnly?: boolean;
 }
 
 export const Input = ({
@@ -20,6 +22,8 @@ export const Input = ({
   value,
   onChange,
   step,
+  disabled,
+  readOnly,
 }: Props) => {
   return (
     <div className="w-full">
@@ -37,6 +41,8 @@ export const Input = ({
         value={value}
         onChange={onChange}
         step={step}
+        disabled={disabled}
+        readOnly={readOnly}
       />
       {description && (
         <p className="text-gray-600 text-xs italic">{description}</p>
