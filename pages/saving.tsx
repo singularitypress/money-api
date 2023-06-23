@@ -1,5 +1,5 @@
 import { Input } from "@components/form";
-import { Container } from "@components/ui";
+import { Button, Container } from "@components/ui";
 import axios from "axios";
 import { GetStaticProps } from "next";
 import Head from "next/head";
@@ -17,7 +17,7 @@ export default function Saving({
   }[];
 }) {
   const [inflationRate, setInflationRate] = useState(
-    cpiYtd.length > 0 ? cpiYtd[cpiYtd.length - 1].STATIC_TOTALCPICHANGE : 0,
+    cpiYtd.length > 0 ? cpiYtd[cpiYtd.length - 1].STATIC_TOTALCPICHANGE : 0
   );
   const [yearsUntilRetirement, setYearsUntilRetirement] = useState(30);
   const [investments, setInvestments] = useState<
@@ -34,7 +34,7 @@ export default function Saving({
       return (
         acc +
         (investment.savings + investment.annualSavingsDeposit) *
-        Math.pow(1 + investment.interest / 100, yearIndex)
+          Math.pow(1 + investment.interest / 100, yearIndex)
       );
     }, 0);
 
@@ -69,8 +69,7 @@ export default function Saving({
               />
             </div>
             <div className="w-full grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <button
-                className="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              <Button
                 onClick={(e) => {
                   e.preventDefault();
                   setInvestments([
@@ -85,7 +84,7 @@ export default function Saving({
                 }}
               >
                 Add Savings
-              </button>
+              </Button>
             </div>
             {investments.map((investment) => {
               return (
@@ -152,19 +151,19 @@ export default function Saving({
                       type="number"
                       step={0.01}
                     />
-                    <div>
-                      <button
-                        className="w-full bg-red-500 hover:bg-red-700 text-white font-bold py-3 px-4 rounded"
+                    <div className="lg:pt-6">
+                      <Button
+                        variant="danger"
                         onClick={(e) => {
                           e.preventDefault();
                           const newInvestments = investments.filter(
-                            (i) => i.id !== investment.id,
+                            (i) => i.id !== investment.id
                           );
                           setInvestments(newInvestments);
                         }}
                       >
                         Remove Investment
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
