@@ -29,6 +29,7 @@ export interface AmortizationTableRow {
   principal: number;
   interest: number;
   payment: number;
+  totalInterest: number;
 }
 
 export interface CPIObservation {

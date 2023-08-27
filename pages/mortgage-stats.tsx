@@ -33,7 +33,8 @@ export default function MortgageStats() {
 
   const [principal, setPrincipal] = useState(400000);
   const [interest, setInterest] = useState(0.065);
-  const [term, setTerm] = useState(360);
+  const [amortizationPeriod, setAmortizationPeriod] = useState(360);
+  const [mortgageTerm, setMortgageTerm] = useState(60);
   const [paymentFrequency, setPaymentFrequency] = useState(12);
   const [startDate, setStartDate] = useState(new Date());
 
@@ -41,10 +42,10 @@ export default function MortgageStats() {
     calculateAmortizationTable(
       principal,
       interest,
-      term,
+      amortizationPeriod,
       paymentFrequency,
-      startDate,
-    ),
+      startDate
+    )
   );
 
   useEffect(() => {
@@ -52,12 +53,12 @@ export default function MortgageStats() {
       calculateAmortizationTable(
         principal,
         interest,
-        term,
+        amortizationPeriod,
         paymentFrequency,
-        startDate,
-      ),
+        startDate
+      )
     );
-  }, [principal, interest, term, paymentFrequency, startDate]);
+  }, [principal, interest, amortizationPeriod, paymentFrequency, startDate]);
 
   return (
     <>
@@ -85,12 +86,20 @@ export default function MortgageStats() {
             onChange={(e) => setInterest(parseFloat(e.target.value))}
           />
           <Input
-            label="Term (in months)"
+            label="Amortization Period (in months)"
             type="number"
-            name="term"
+            name="amortization-period"
             placeholder="360"
-            value={term}
-            onChange={(e) => setTerm(parseFloat(e.target.value))}
+            value={amortizationPeriod}
+            onChange={(e) => setAmortizationPeriod(parseFloat(e.target.value))}
+          />
+          <Input
+            label="Mortgage Term/ Remaining in Term (in months)"
+            type="number"
+            name="mortgage-term"
+            placeholder="60"
+            value={mortgageTerm}
+            onChange={(e) => setMortgageTerm(parseFloat(e.target.value))}
           />
           <Select
             label="Payment Frequency"
@@ -105,7 +114,7 @@ export default function MortgageStats() {
             }))}
             onChange={(e) => {
               setPaymentFrequency(
-                parseFloat((e as { label: string; value: string }).value),
+                parseFloat((e as { label: string; value: string }).value)
               );
             }}
           />
@@ -164,56 +173,84 @@ export default function MortgageStats() {
           <div className="flex flex-col">
             <Input
               label="Total Interest"
-              type="number"
+              type="text"
               name="total-interest"
               value={amortization
                 .reduce((acc, row) => acc + row.interest, 0)
-                .toFixed(2)}
+                ?.toLocaleString("en-CA", {
+                  currency: "CAD",
+                  style: "currency",
+                })}
               readOnly
               disabled
-              onChange={() => { }}
+              onChange={() => {}}
+            />
+          </div>
+          <div className="flex flex-col">
+            <Input
+              label="Total Interest Paid In Term"
+              type="text"
+              name="total-interest-in-term"
+              value={amortization[
+                mortgageTerm - 1
+              ]?.totalInterest?.toLocaleString("en-CA", {
+                currency: "CAD",
+                style: "currency",
+              })}
+              readOnly
+              disabled
+              onChange={() => {}}
             />
           </div>
           <div className="flex flex-col">
             <Input
               label="Total Principal"
-              type="number"
+              type="text"
               name="total-principal"
               value={amortization
                 .reduce((acc, row) => acc + row.principal, 0)
-                .toFixed(2)}
+                ?.toLocaleString("en-CA", {
+                  currency: "CAD",
+                  style: "currency",
+                })}
               readOnly
               disabled
-              onChange={() => { }}
+              onChange={() => {}}
             />
           </div>
           <div className="flex flex-col">
             <Input
               label="Total Payments"
-              type="number"
+              type="text"
               name="total-payments"
               value={amortization
                 .reduce((acc, row) => acc + row.payment, 0)
-                .toFixed(2)}
+                ?.toLocaleString("en-CA", {
+                  currency: "CAD",
+                  style: "currency",
+                })}
               readOnly
               disabled
-              onChange={() => { }}
+              onChange={() => {}}
             />
           </div>
           {/* Calculated payment per month based on Total Payments */}
           <div className="flex flex-col">
             <Input
               label="Payment Averaged Per Month"
-              type="number"
+              type="text"
               name="payment"
               placeholder="1000"
               value={(
                 (amortization[0]?.payment * paymentFrequency) /
                 12
-              ).toFixed(2)}
+              )?.toLocaleString("en-CA", {
+                currency: "CAD",
+                style: "currency",
+              })}
               readOnly
               disabled
-              onChange={() => { }}
+              onChange={() => {}}
             />
           </div>
         </div>

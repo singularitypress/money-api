@@ -42,6 +42,10 @@ export function calculateAmortizationTable(
     // Calculate the interest and principal components of the payment.
     const interest = balance * monthlyInterestRate;
     const principal = payment - interest;
+    let totalInterest =
+      paymentNumber === 1
+        ? interest
+        : amortizationTable[paymentNumber - 2].totalInterest + interest;
 
     // Update the loan balance after the payment is made.
     balance -= principal;
@@ -54,6 +58,7 @@ export function calculateAmortizationTable(
       principal,
       interest,
       payment,
+      totalInterest,
     });
   }
 
